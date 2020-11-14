@@ -150,6 +150,20 @@ struct Elephant {
     }
 };
 
+struct Queen {
+    bits mask_;
+    Queen(uint64_t init)
+    {
+        mask_.set();
+        mask_[init]=0;
+    }
+
+    uint64_t mask()
+    {
+        return mask_.to_ullong();
+    }
+};
+
 
 int count_step(uint64_t mask)
 {
@@ -175,7 +189,7 @@ void Do(const std::string& fig, uint64_t init)
     } else if (fig == "elephant") {
         mask = Elephant(init).mask();
     } else if (fig == "queen") {
-
+        mask = Queen(init).mask();
     }
         
     std::cout << count_step(mask) << std::endl << mask << std::endl;
