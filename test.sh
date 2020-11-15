@@ -3,17 +3,25 @@
 function test {
     for (( count=0; count<10; count++ ))
     do
-    FILEIN=$(printf 0.BITS/king/test.%d.in "$count")
-    FILEOUT=$(printf 0.BITS/king/test.%d.out "$count")
+    FILEIN=$(printf $DIRECTORY/test.%d.in "$count")
+    FILEOUT=$(printf $DIRECTORY/test.%d.out "$count")
     n=$(sed -n '1 p' $FILEIN)
-    COUNT_STEP=$(sed -n '1 p' $FILEOUT)
+    COUNTS=$(sed -n '1 p' $FILEOUT)
     MASK=$(sed -n '2 p' $FILEOUT)
+    result=$(./bits $n $TYPE)
+    RESULT_ARR=(${result[@]})
+    RESULT_COUNTS="${RESULT_ARR[0]}"
+    RESULT_MASK="${RESULT_ARR[1]}"
 
-    echo $TYPE
-    result=$(./bits n $TYPE)
-    echo "$result" 
+    echo "Expected mask $MASK"
+    echo "Actual mask $RESULT_MASK"
+
+    echo "Expected count $COUNTS"
+    echo "Actual count $RESULT_COUNTS"
+    
     done
 }
 
-TYPE=$1
+DIRECTORY=$1
+TYPE=$2
 test
