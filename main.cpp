@@ -17,8 +17,6 @@ struct Figure {
     }
 };
 
-
-
 struct King : Figure{
     bits r_masked, u_masked;
     bits b_masked, l_masked;
@@ -195,12 +193,10 @@ void Do(const std::string& fig, uint64_t init)
     std::cout << count_step(mask) << std::endl << mask << std::endl;
 }
 
-int main()
+int main(int argc, char **argv)
 {
-    uint64_t n;
-    std::cin >> n;
-    std::string str;
-    std::cin >> str;
+    uint64_t n = atoi(argv[1]);
+    std::string str = argv[2];
 
     Do(str, n);
 }
