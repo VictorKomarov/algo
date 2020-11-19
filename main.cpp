@@ -1,4 +1,5 @@
 #include <iostream>
+#include <functional>
 #include <vector>
 
 std::vector<int>& selection_sort(std::vector<int>& arr)
@@ -32,17 +33,35 @@ std::vector<int>& insert_sort(std::vector<int>& arr)
 }
 
 
-std::vector<int>& shell_sort(std::vector<int>& arr, size_t step)
+std::vector<int>& shell_sort(std::vector<int>& arr, std::function<int(int)> next_step, int step)
 {
-
+    while (step > 1)
+    {
+        for(int i = 0; i < step; ++i)
+        {
+            int groups = (arr.size() / step);
+            int last_index = i + (step * (groups - 1));
+            while (last_index != i)
+            {
+                if (arr[last_index] < arr[last_index-step]) std::swap(arr[last_index], arr[last_index-step]);
+                last_index-=step;
+            }
+        }
+        step = next_step(step);
+    }
+    
     return insert_sort(arr);
 }
 
+int del_2(int num)
+{
+    return num / 2;
+}
 
 int main()
 {
-    std::vector<int> num = {10,92,3,20,1,2,3,0,4,6,109,5,8};
-    num = insert_sort(num);
+    std::vector<int> num = {7,6,5,4,3,2,1,0};
+    num = shell_sort(num, del_2, num.size()/2);
     for(int n : num) std::cout << n << " ";
     std::cout << std::endl;
 }
