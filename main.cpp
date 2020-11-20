@@ -1,5 +1,6 @@
 #include <iostream>
 #include <functional>
+#include <cmath>
 #include <vector>
 
 std::vector<int>& selection_sort(std::vector<int>& arr)
@@ -53,15 +54,82 @@ std::vector<int>& shell_sort(std::vector<int>& arr, std::function<int(int)> next
     return insert_sort(arr);
 }
 
-int del_2(int num)
-{
-    return num / 2;
-}
+int classic_policy(int prev){ return prev / 2; }
+
+int knuth_policy(int prev) { return (prev-1) / 3; }
+
+int hibbard_policy(int prev) { return (log2(prev) - 1); }
+
+class Heap {
+public:
+    Heap(std::vector<int>& arr) : heap(arr)
+    {
+        heapify();
+        end_of_heap = heap.size()-1;
+    }
+
+    std::vector<int>& Sort()
+    {
+        while (end_of_heap > 0)
+        {
+            std::swap(heap[0], heap[end_of_heap]);
+            --end_of_heap;
+            down_vertex();
+        }
+        return heap;
+    }
+
+private:
+    void heapify()
+    {
+        for(size_t i = heap.size()-1; i != 0; --i)
+        {
+            shift_up(i);
+        }
+    }
+
+    void shift_up(size_t idx) 
+    {
+        while (idx > 0)
+        {
+            size_t p_id = parent(idx);
+            if (heap[p_id] < heap[idx]) return;
+            std::swap(heap[p_id], heap[idx]);
+            idx = p_id;
+        }
+    }
+
+    void down_vertex()
+    {
+        size_t idx = 0;
+        while (idx < end_of_heap)
+        {
+            size_t go_to = idx;
+            size_t left = left_child(go_to);
+            size_t right = right_child(go_to);
+
+            if (left < end_of_heap && heap[left] < heap[go_to]) go_to = left;
+            if (right < end_of_heap && heap[right] < heap[go_to]) go_to = right;
+            if (go_to == idx) return;
+
+            std::swap(heap[go_to], heap[idx]);
+            idx = go_to;
+        }
+    }
+
+    size_t parent(size_t id)    {return (id - 1) / 2;}
+    size_t left_child(size_t id)  {return 2 * id + 1;}
+    size_t right_child(size_t id) {return 2 * id + 2;}
+
+    std::vector<int>& heap;
+    size_t end_of_heap;
+};
 
 int main()
 {
-    std::vector<int> num = {7,6,5,4,3,2,1,0};
-    num = shell_sort(num, del_2, num.size()/2);
+    std::vector<int> num = {10,23,4,0,1,56,29,100,22,19,15,7,9};
+    Heap heap(num);
+    num = heap.Sort();
     for(int n : num) std::cout << n << " ";
     std::cout << std::endl;
 }
