@@ -93,7 +93,7 @@ private:
         while (idx > 0)
         {
             size_t p_id = parent(idx);
-            if (heap[p_id] < heap[idx]) return;
+            if (heap[p_id] > heap[idx]) return;
             std::swap(heap[p_id], heap[idx]);
             idx = p_id;
         }
@@ -108,8 +108,8 @@ private:
             size_t left = left_child(go_to);
             size_t right = right_child(go_to);
 
-            if (left < end_of_heap && heap[left] < heap[go_to]) go_to = left;
-            if (right < end_of_heap && heap[right] < heap[go_to]) go_to = right;
+            if (left < end_of_heap && heap[left] > heap[go_to]) go_to = left;
+            if (right < end_of_heap && heap[right] > heap[go_to]) go_to = right;
             if (go_to == idx) return;
 
             std::swap(heap[go_to], heap[idx]);
