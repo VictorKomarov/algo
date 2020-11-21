@@ -2,6 +2,7 @@
 #include <functional>
 #include <cmath>
 #include <vector>
+#include "sort.hpp"
 
 std::vector<int>& selection_sort(std::vector<int>& arr)
 {
@@ -33,9 +34,15 @@ std::vector<int>& insert_sort(std::vector<int>& arr)
     return arr;
 }
 
+int classic_policy(int prev){ return prev / 2; }
 
-std::vector<int>& shell_sort(std::vector<int>& arr, std::function<int(int)> next_step, int step)
+int knuth_policy(int prev) { return (prev-1) / 3; }
+
+int hibbard_policy(int prev) { return (log2(prev) - 1); }
+
+std::vector<int>& shell_sort(std::vector<int>& arr)
 {
+    size_t step = classic_policy(arr.size());
     while (step > 1)
     {
         for(int i = 0; i < step; ++i)
@@ -48,22 +55,17 @@ std::vector<int>& shell_sort(std::vector<int>& arr, std::function<int(int)> next
                 last_index-=step;
             }
         }
-        step = next_step(step);
+        step = classic_policy(step);
     }
     
     return insert_sort(arr);
 }
 
-int classic_policy(int prev){ return prev / 2; }
-
-int knuth_policy(int prev) { return (prev-1) / 3; }
-
-int hibbard_policy(int prev) { return (log2(prev) - 1); }
-
 class Heap {
 public:
     Heap(std::vector<int>& arr) : heap(arr)
     {
+        end_of_heap = heap.size();
         heapify();
         end_of_heap = heap.size()-1;
     }
@@ -72,9 +74,8 @@ public:
     {
         while (end_of_heap > 0)
         {
-            std::swap(heap[0], heap[end_of_heap]);
-            --end_of_heap;
-            down_vertex();
+            std::swap(heap[0], heap[end_of_heap--]);
+            down_node();
         }
         return heap;
     }
@@ -90,30 +91,29 @@ private:
 
     void shift_up(size_t idx) 
     {
-        while (idx > 0)
+        while (idx != 0)
         {
             size_t p_id = parent(idx);
             if (heap[p_id] > heap[idx]) return;
-            std::swap(heap[p_id], heap[idx]);
-            idx = p_id;
+            std::swap(heap[idx], heap[p_id]);
+            down_node(idx);
         }
     }
 
-    void down_vertex()
+    void down_node(size_t idx = 0)
     {
-        size_t idx = 0;
         while (idx < end_of_heap)
         {
-            size_t go_to = idx;
-            size_t left = left_child(go_to);
-            size_t right = right_child(go_to);
+            size_t from = idx;
+            size_t left = left_child(from);
+            size_t right = right_child(from);
 
-            if (left < end_of_heap && heap[left] > heap[go_to]) go_to = left;
-            if (right < end_of_heap && heap[right] > heap[go_to]) go_to = right;
-            if (go_to == idx) return;
+            if (left < end_of_heap && heap[left] > heap[from]) from = left;
+            if (right < end_of_heap && heap[right] > heap[from]) from = right;
+            if (from == idx) return;
 
-            std::swap(heap[go_to], heap[idx]);
-            idx = go_to;
+            std::swap(heap[from], heap[idx]);
+            idx = from;
         }
     }
 
@@ -125,11 +125,7 @@ private:
     size_t end_of_heap;
 };
 
-int main()
+std::vector<int>& heap_sort(std::vector<int>& nums)
 {
-    std::vector<int> num = {10,23,4,0,1,56,29,100,22,19,15,7,9};
-    Heap heap(num);
-    num = heap.Sort();
-    for(int n : num) std::cout << n << " ";
-    std::cout << std::endl;
+    return Heap(nums).Sort();
 }
