@@ -30,7 +30,7 @@ struct TestCase {
 
 int main()
 {
-    /*std::string directory = "tests";
+    std::string directory = "tests";
     std::vector<std::string> subdirs{"0.random", "1.digits", "2.sorted", "3.revers"};
     std::vector<TestCase> tests{{"selection_sort", selection_sort}, {"insert_sort", insert_sort}, {"shell_sort", shell_sort}, {"heap_sort", heap_sort}};
     for(auto& sub : subdirs)
@@ -64,10 +64,5 @@ int main()
             }    
             f.close();
         }
-    }*/
-
-    std::vector<int>n {7,0,6,1,3,2,8,5,4,9};
-    n = heap_sort(n);
-    for(auto i : n) std::cout << i;
-    std::cout << std::endl;
+    }
 }

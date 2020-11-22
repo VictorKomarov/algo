@@ -65,9 +65,8 @@ class Heap {
 public:
     Heap(std::vector<int>& arr) : heap(arr)
     {
-        end_of_heap = heap.size();
-        heapify();
         end_of_heap = heap.size()-1;
+        heapify();
     }
 
     std::vector<int>& Sort()
@@ -75,7 +74,7 @@ public:
         while (end_of_heap > 0)
         {
             std::swap(heap[0], heap[end_of_heap--]);
-            down_node();
+            heapify();
         }
         return heap;
     }
@@ -83,7 +82,7 @@ public:
 private:
     void heapify()
     {
-        for(size_t i = heap.size()-1; i != 0; --i)
+        for(size_t i = end_of_heap; i != 0; --i)
         {
             shift_up(i);
         }
