@@ -5,7 +5,7 @@
 #include <dirent.h>
 #include <algorithm>
 
-using function_sort = std::function<std::vector<int>&(std::vector<int>&)>;
+using function_sort = std::function<void(std::vector<int>&)>;
 
 std::vector<std::string> test_file(const std::string& dir)
 {
@@ -32,7 +32,7 @@ int main()
 {
     std::string directory = "tests";
     std::vector<std::string> subdirs{"0.random", "1.digits", "2.sorted", "3.revers"};
-    std::vector<TestCase> tests{{"selection_sort", selection_sort}, {"insert_sort", insert_sort}, {"shell_sort", shell_sort}, {"heap_sort", heap_sort}};
+    std::vector<TestCase> tests{{"bucket_sort", bucket_sort}};
     for(auto& sub : subdirs)
     {
         auto files = test_file(directory + "/" + sub);
@@ -55,7 +55,7 @@ int main()
             for(auto sort : tests)
             {
                 auto copy = nums;
-                copy = sort.t_case(copy);
+                sort.t_case(copy);
                 if (copy != sorted_nums){
                     std::cout << "FAIL " << sort.name << " " << file << std::endl;
                 } else {

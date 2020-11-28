@@ -4,9 +4,9 @@ run: test
 	./test
 
 test: sort test.cpp
-	g++ $(CFLAGS) test.cpp main.cpp -o test
+	g++ $(CFLAGS) test.cpp sort.cpp linear_sort.cpp -o test
 
-sort: main.cpp
+sort: sort.cpp linear_sort.cpp
 	g++ $(CFLAGS) -c $< -o sort
 
 clean:
