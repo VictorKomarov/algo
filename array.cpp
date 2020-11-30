@@ -16,7 +16,7 @@ public:
         }
     }
 
-    ~Array()
+    ~Array() override
     {
         delete [] array;
     }
@@ -26,7 +26,7 @@ public:
         return array[i];
     }
 
-    void add(T val)
+    void add(T val) override
     {
         if (cap == size) {
             cap = next_size(cap);
@@ -34,10 +34,10 @@ public:
             delete [] array;
             array = new_arr;
         }
-        array[size++] = val;
+        array[size_++] = val;
     }
 
-    void add(T val, size_t i)
+    void add(size_t i, T val) override
     {
         if (i < size){
             array[i] = val;
@@ -47,9 +47,9 @@ public:
         add(val); // strange strategy
     }
 
-    size_t get_size() {return size;}
+    size_t size() override {return size_;}
 
-    T remove(size_t i)
+    T remove(size_t i) override
     {
         T removed = array[i];
         auto next = i + 1;
@@ -66,7 +66,7 @@ private:
     T* new_array(size_t sz)
     {
         T* n_array =  new T[sz];
-        for(size_t i = 0; i < size; ++i)
+        for(size_t i = 0; i < size_; ++i)
         {
             n_array[i] = array[i];
         }
@@ -74,7 +74,7 @@ private:
     }
 
     T* array;
-    size_t size;
+    size_t size_;
     size_t cap;
     strategy next_size;
 };

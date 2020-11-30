@@ -1,18 +1,17 @@
-#include <memory>
-template<typename T>
-class Array;
+#include "array.hpp"
 
 template<typename T>
 class Matrix
 {
 private:
-    Array<Array<T>> array;
-    size_t arrs;
+    IArray<IArray<T>*> array;
+    size_t size_;
 public:
-    Matrix()
-    {
-        arrs = 10;
-        array = new 
-    };
-    ~Matrix();
+    Matrix(){};
+    ~Matrix() override {};
+    void add(T val) override{};
+    void add(size_t i, T val) override{};
+    T remove(size_t i) override{};
+    size_t size() override {return size_;}
+    T& operator[] (size_t i) override
 };
