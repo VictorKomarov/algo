@@ -1,13 +1,22 @@
 CPPFLAGS=-Wall -Werror -Wpedantic
 
-run: test
+run: all
 	./test
 
-test: sort test.cpp
-	g++ $(CFLAGS) test.cpp sort.cpp linear_sort.cpp -o test
+all: sort test
+	g++ $(CFLAGS) $< -o test
+
+test: test.cpp
+	g++ $(CFLAGS) -c $< -o test	
 
 sort: sort.cpp linear_sort.cpp
 	g++ $(CFLAGS) -c $< -o sort
 
+generate: gen
+	./gen -n $(name) -s $(size)	
+
+gen: generator.cpp
+	g++ $(CFLAGS) $< -o gen
+
 clean:
-	rm test sort
+	rm test sort gen

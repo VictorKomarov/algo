@@ -46,9 +46,7 @@ int main(int argc, char** argv)
     while(size--)
     {
         int16_t num =  rand() % static_cast<int16_t>(INT16_MAX);
-        std::cout << "write " << num << std::endl;
         file.write((char *)&num, sizeof(num));
-        --size;
     }
     file.close();
 }
