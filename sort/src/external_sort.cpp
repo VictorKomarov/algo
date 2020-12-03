@@ -8,16 +8,9 @@
 #include <sstream>
 #include <cstdio>
 #include <memory>
+#include "sort.hpp"
 
 constexpr int BUFF_SIZE = 4096;
-
-size_t count_numbers(std::fstream& src)
-{
-    src.seekg(0, src.end);  
-    size_t size = src.tellg();
-    src.seekg(0, src.beg);
-    return size/2;
-}
 
 class FileBuff{
 public:
@@ -60,23 +53,6 @@ private:
     const std::string& path;
     std::unique_ptr<std::ifstream> file;
 };
-
-class BinaryFile
-{
-public:
-    BinaryFile(const std::string& path)
-    {
-        file.open(path, std::ios::binary);
-    }
-
-    void push_back(uint16_t num)
-    {
-        file.write((char *)&num, sizeof(num));
-    }
-private:
-    std::fstream file;
-};
-
 
 template<typename Buff, typename Target>
 void merge(std::vector<Buff>& arrs, Target&& target)
@@ -158,30 +134,15 @@ std::string sort_and_save(std::vector<int>& buf, int ntn)
     return ss.str();
 }
 
-std::vector<int> read_bucket(std::fstream& in, int limit)
-{   
-    std::vector<int> bucket;
-    while (limit--)
-    {
-        char byte2[2];
-        in.read(byte2, 2);
-        auto num = reinterpret_cast<uint16_t*>(byte2);
-        bucket.push_back(*num);
-    }
-
-    return bucket;
-}
-
-void external_sort(std::fstream& src, BinaryFile& bin)
+void external_sort(std::string path)
 {
-    auto count = count_numbers(src);
+    BinaryFile src(std::move(path));
+
     std::vector<std::string> sorted_buckets;
-    auto ntn = 0;
-    while (count)
+    while (bin.is_end())
     {
-        auto bucket_size = (count - BUFF_SIZE > 0) ? BUFF_SIZE : count;
-        auto bucket = read_bucket(src, bucket_size);
-        sorted_buckets.push_back(sort_and_save(bucket, ntn++));
+        auto bucket = bin.read_bucket(BUFF_SIZE);
+        sorted_buckets.push_back(sort_and_save(std::move(bucket), sorted_buckets.size()));
     }
 
     std::vector<FileBuff> files;
