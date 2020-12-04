@@ -27,6 +27,7 @@ private:
 public:
     BinaryFile(std::string path);
     BinaryFile(std::string path, size_t buff);
+    BinaryFile(BinaryFile&& b) = default; 
     ~BinaryFile();
     BinaryFile(const BinaryFile& buff) = delete;
 
@@ -37,6 +38,7 @@ public:
     bool empty();
     void pop();
     uint16_t front();
+    void seek_to_begin();
 };
 
 BinaryFile::BinaryFile(std::string path):
@@ -113,4 +115,9 @@ uint16_t BinaryFile::front()
 {
     if (cursor == real_buff_size) fill_buff();
     return buff[cursor];
+}
+
+void BinaryFile::seek_to_begin()
+{
+    file.seekg(0, file.beg);
 }
