@@ -12,21 +12,31 @@ void heap_sort(std::vector<int>& nums);
 void bucket_sort(std::vector<int>& arr);
 void external_sort(std::string path);
 
+// TODO::refactor this class (he does too many jobs)
 class BinaryFile {
 private:
     std::fstream file;
-    std::string name;
     size_t available_nums = 0;
+    std::string name;
+ 
+    std::vector<uint16_t> buff; // fixed size
+    size_t cursor = 0;
+    size_t real_buff_size = 0;
+    void fill_buff();
+    uint16_t read();
 public:
     BinaryFile(std::string path);
+    BinaryFile(std::string path, size_t buff);
     ~BinaryFile();
     BinaryFile(const BinaryFile& buff) = delete;
 
     void push_back(uint16_t num);
     std::vector<uint16_t> read_bucket(size_t limit);
     void remove_file();
-    std::string get_file_name();
     bool is_end();
+    bool empty();
+    void pop();
+    uint16_t front();
 };
 
 BinaryFile::BinaryFile(std::string path):
@@ -35,6 +45,12 @@ BinaryFile::BinaryFile(std::string path):
     file.seekg(0, file.end);
     available_nums = file.tellg() / sizeof(uint16_t);
     file.seekg(0, file.beg); 
+}
+
+BinaryFile::BinaryFile(std::string path, size_t buff_size):BinaryFile(std::move(path))
+{
+    buff.reserve(buff_size);
+    fill_buff();
 }
 
 BinaryFile::~BinaryFile() { file.close();}
@@ -52,11 +68,7 @@ std::vector<uint16_t> BinaryFile::read_bucket(size_t limit)
     limit = (available_nums > limit) ? limit : available_nums;
     while (limit--)
     {
-        char byte_2[sizeof(uint16_t)];
-        file.read(byte_2, sizeof(uint16_t));
-        auto num = reinterpret_cast<uint16_t*>(byte_2);
-        bucket.push_back(*num);
-        --available_nums;
+        bucket.push_back(read());
     }
     
     return bucket;
@@ -64,6 +76,41 @@ std::vector<uint16_t> BinaryFile::read_bucket(size_t limit)
 
 void BinaryFile::remove_file() { remove(name.c_str());}
 
-std::string BinaryFile::get_file_name(){return name;}
-
 bool BinaryFile::is_end(){return available_nums == 0;}
+
+uint16_t BinaryFile::read()
+{
+    char byte_2[sizeof(uint16_t)];
+    file.read(byte_2, sizeof(uint16_t));
+    auto num = reinterpret_cast<uint16_t*>(byte_2);
+    --available_nums;
+    return *num;
+}
+
+void BinaryFile::fill_buff()
+{
+    size_t i = 0;
+    while (!is_end() && (i < buff.size()))
+    {
+        buff[i] = read();
+        ++i;
+    }
+    cursor = 0;
+    real_buff_size = i;
+}
+
+bool BinaryFile::empty()
+{
+    return (cursor == real_buff_size) && is_end();
+}
+
+void BinaryFile::pop()
+{
+    ++cursor;
+}
+
+uint16_t BinaryFile::front()
+{
+    if (cursor == real_buff_size) fill_buff();
+    return buff[cursor];
+}
