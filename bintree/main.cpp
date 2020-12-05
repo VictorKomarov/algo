@@ -4,6 +4,4 @@
 
 int main()
 {
-    BinTree<int> b;
-    b.insert(10, 4);
 }
