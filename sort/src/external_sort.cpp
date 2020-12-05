@@ -1,17 +1,14 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <algorithm>
 #include <queue>
 #include <string>
 #include <limits>
-#include <sstream>
 #include <cstdio>
 #include <memory>
 #include "sort.hpp"
-#include <type_traits>
 
-constexpr int BUFF_SIZE = 4096;
+constexpr int BUFF_SIZE = 1000000;
 
 template<typename Buff>
 bool merge_continue(std::vector<Buff>& arr)
@@ -42,7 +39,7 @@ void merge(std::vector<Buff>& arr, Target& target)
         target.push_back(min);
         arr[min_id].pop();
     }
-    std::cout << "here" << std::endl;
+
     for(size_t i = 0; i < arr.size(); ++i)
     {
         while (!arr[i].empty())
@@ -74,10 +71,8 @@ std::vector<uint16_t> sort(std::vector<uint16_t> arr)
  
    left = sort(left);
    right = sort(right);
-
-   std::cout << left.size() << " " << right.size() << std::endl;
+  
    std::vector<std::queue<uint16_t>> merged{to_queue(left), to_queue(right)};
-   std::cout << merged.size() << std::endl;
    merge(merged, result);
    return result;
 }
@@ -100,7 +95,7 @@ void external_sort(std::string path)
     BinaryFile src(std::move(path));
 
     std::vector<std::string> sorted_buckets;
-    while (src.is_end())
+    while (!src.is_end())
     {
         auto bucket = src.read_bucket(BUFF_SIZE);
         sorted_buckets.push_back(sort_and_save(std::move(bucket), sorted_buckets.size()));
@@ -120,4 +115,5 @@ void external_sort(std::string path)
 
 int main()
 {
+    external_sort("sorted_file");
 }

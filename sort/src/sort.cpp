@@ -2,7 +2,6 @@
 #include <functional>
 #include <cmath>
 #include <vector>
-#include "sort.hpp"
 
 void selection_sort(std::vector<int>& arr)
 {
@@ -41,10 +40,10 @@ void shell_sort(std::vector<int>& arr)
     size_t step = classic_policy(arr.size());
     while (step > 1)
     {
-        for(int i = 0; i < step; ++i)
+        for(size_t i = 0; i < step; ++i)
         {
-            int groups = (arr.size() / step);
-            int last_index = i + (step * (groups - 1));
+            size_t groups = (arr.size() / step);
+            size_t last_index = i + (step * (groups - 1));
             while (last_index != i)
             {
                 if (arr[last_index] < arr[last_index-step]) std::swap(arr[last_index], arr[last_index-step]);
