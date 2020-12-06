@@ -1,6 +1,19 @@
 #pragma once
 #include <memory>
 #include <iostream>
+#include <functional>
+
+enum Child {
+    CHILD_ZERO,
+    CHILD_ONE,
+    CHILD_TWO,
+};
+
+enum ChildDir {
+    ROOT,
+    CHILD_LEFT,
+    CHILD_RIGHT,
+};
 
 template <typename T>
 struct Node
@@ -10,6 +23,59 @@ struct Node
     std::unique_ptr<Node<T>> parent;
     std::unique_ptr<Node<T>> left;
     std::unique_ptr<Node<T>> right;
+
+    void remove_child(size_t key_child)
+    {
+       if (left && left->key == key_child) {
+            left.reset();
+        } else if (right && right->key == key_child) {
+            right.reset();
+        }
+    }
+
+    ChildDir my_dir()
+    {
+        if (!parent) ROOT;
+
+        if (parent->left && parent->left->key == key) {
+            return CHILD_LEFT;
+        } else {
+            return CHILD_RIGHT;
+        }
+    }
+
+    std::unique_ptr<Node<T>>& prev_node()
+    { // case when no childs
+        auto& last_leaf = [](auto& self, std::unique_ptr<Node<T>>& n) -> std::unique_ptr<Node<T>>& {
+            if (n->right) return n;
+            return self(self, n->right);
+        }(last_leaf, left);
+
+        return last_leaf;
+    }
+
+    void parent_to_child(std::unique_ptr<Node<T>>& child)
+    {
+        switch (my_dir())
+        {
+        case ROOT:
+            return;
+        case CHILD_LEFT:
+            parent->left->reset(child.realese());
+            break;
+        case CHILD_RIGHT:
+            parent->right->reset(child.realese());
+            break;
+        }
+    }
+
+    Child count_childs()
+    {
+        if (left || right) {
+            return (left && right) ? CHILD_TWO : CHILD_ONE;
+        }
+        return CHILD_ZERO;
+    }
 };
 
 
@@ -25,7 +91,7 @@ private:
 
     node& search_helper(node& n, size_t key)
     {
-        if (n == nullptr) return nullptr;
+        if (!n) return nullptr;
         if (n->key == key) return n;
         
         return (n->key > key) ? search_helper(n->left, key) : search_helper(n->right, key); 
@@ -34,74 +100,47 @@ private:
     void insert_helper(size_t key, T val, node& n)
     {
         if (n->key > key) {
-            if (n->left == nullptr) {
-                node insterted = new Node<T>{val, key, n}; 
-                n->left.reset(insterted);
+            if (!n->left) {
+                n->left.reset(new Node<T>{val, key, n});
                 return;
             }
 
             insert_helper(key,val,n->left);
         } else {
-            if (n->right == nullptr) {
-                node insterted = new Node<T>{val, key, n}; 
-                n->right.reset(insterted);
+            if (!n->right) {
+                n->right.reset(new Node<T>{val, key, n});
                 return;
             }
 
             insert_helper(key, val,n->right);
         }
     }
-    size_t count_child(node& n)
-    {
-        if (n->left || n->right) {
-            return (n->left && n->right) ? 2 : 1;
-        }
-        return 0;
-    }
-    void delete_child(node& n, size_t key_child)
-    {
-        if (n) {
-            if (n->left && n->left->key == key_child) {
-                n->left = nullptr;
-            } else (n->right && n->right->key == key_child) {
-                n->right = nullptr;
-            }
-        }
-    }
-    node& next_elem(node& n)
-    {
-        if (n->right) {
-            // rec for limit left
-        }
-    }
+
     void remove_helper(size_t key)
     {
-        auto n = search_helper(root, key);
-        if (n == nullptr) return;
+        auto& n = search_helper(root, key);
+        if (!n) return;
 
         switch (count_child(n))
         {
-        case 0:
-            delete_child(n->parent, key);
-            n.reset(nullptr); // TODO::does it delete node?
-            break;
-        case 1:
-            node& child = (n->left) ? n->left : n->right;
-            if (n->parent)  { 
-               if (n->parent->left && n->parent->left->key == key) {
-                   n->parent->left = child;
-               }  else {
-                   n->parent->right = child;
-               } 
-            } else { // n - is root
-                root = child;
+        case CHILD_ZERO:
+            if (n != root) {
+                n->parent.remove_child(key);
             }
-            n.reset(nullptr);   
             break;
-        case 2:
-
+        case CHILD_ONE:
+            auto& child = (n->left) ? n->left : n->right;
+            if (n == root) {
+                root.reset(child.realese());
+            } else {
+                n.parent_to_child(child);
+            }
+            break;
+        case CHILD_TWO:
+            // implement
             break;
         }
+        n.reset();
     }
 public:
     void print_tree()
@@ -117,7 +156,7 @@ public:
 
     void insert(size_t key, T val)
     {
-        if (root == nullptr) {
+        if (!root) {
             root.reset(new Node<T>{val, key});
             return;
         }
