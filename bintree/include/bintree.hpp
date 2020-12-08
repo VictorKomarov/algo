@@ -1,6 +1,9 @@
 #pragma once
 #include <memory>
 #include <iostream>
+#include <sstream>
+#include <vector>
+#include <iomanip>
 #include <functional>
 
 enum Child {
@@ -20,9 +23,10 @@ struct Node
 {
     T val;
     size_t key;
-    std::unique_ptr<Node<T>> parent;
-    std::unique_ptr<Node<T>> left;
-    std::unique_ptr<Node<T>> right;
+    size_t height = 0;  // count node to root
+    std::shared_ptr<Node<T>> parent;
+    std::shared_ptr<Node<T>> left;
+    std::shared_ptr<Node<T>> right;
 
     void remove_child(size_t key_child)
     {
@@ -44,9 +48,9 @@ struct Node
         }
     }
 
-    std::unique_ptr<Node<T>>& prev_node()
+    std::shared_ptr<Node<T>>& prev_node()
     { // case when no childs
-        auto& last_leaf = [](auto& self, std::unique_ptr<Node<T>>& n) -> std::unique_ptr<Node<T>>& {
+        auto& last_leaf = [](auto& self, std::shared_ptr<Node<T>>& n) -> std::shared_ptr<Node<T>>& {
             if (n->right) return n;
             return self(self, n->right);
         }(last_leaf, left);
@@ -54,7 +58,7 @@ struct Node
         return last_leaf;
     }
 
-    void parent_to_child(std::unique_ptr<Node<T>>& child)
+    void parent_to_child(std::shared_ptr<Node<T>>& child)
     {
         switch (my_dir())
         {
@@ -76,20 +80,55 @@ struct Node
         }
         return CHILD_ZERO;
     }
+
+    static std::string pretty(std::shared_ptr<Node<T>>& n)
+    {
+        if (!n) {
+            return "empty";
+        }
+
+        std::stringstream str;
+        str << n->val << "(" << n->key << ")";
+        return str.str();
+    }
 };
 
 
 template <typename T>
 class BinTree {
 private:
-    using node = std::unique_ptr<Node<T>>;
+    using node = std::shared_ptr<Node<T>>;
     node root = nullptr;
-    void print_tree_helper(node& n, size_t pos = 20)
+    size_t max_height = 0;  // for print target
+    std::vector<std::vector<std::string>> print_tree_helper(node& left, node& right)
     {
-        // need to implement -> need to know the height
+        std::vector<std::vector<std::string>> nodes = {{Node<T>::pretty(left), Node<T>::pretty(right)}};
+        
+        std::vector<std::vector<std::string>> left_childs;
+        if (left) {
+            left_childs = print_tree_helper(left->left, left->right);
+        }
+
+        std::vector<std::vector<std::string>> right_childs;
+        if (right) {
+            right_childs = print_tree_helper(right->left, right->right);
+        }
+
+        size_t l = 0, r = 0;
+        while (l < left_childs.size() || r < right_childs.size())
+        {
+            std::vector<std::string> temps;
+            if (l < left_childs.size()) temps.insert(temps.end(), left_childs[l].begin(),left_childs[l].end());
+            if (r < right_childs.size()) temps.insert(temps.end(),right_childs[r].begin(),right_childs[r].end());
+            nodes.push_back(temps);
+
+            ++l, ++r;
+        }
+        
+        return nodes;
     }
 
-    node& search_helper(node& n, size_t key)
+    node search_helper(node& n, size_t key)
     {
         if (!n) return nullptr;
         if (n->key == key) return n;
@@ -97,55 +136,71 @@ private:
         return (n->key > key) ? search_helper(n->left, key) : search_helper(n->right, key); 
     }
 
-    void insert_helper(size_t key, T val, node& n)
+    size_t insert_helper(size_t key, T val, node& n)
     {
         if (n->key > key) {
             if (!n->left) {
-                n->left.reset(new Node<T>{val, key, n});
-                return;
+                n->left.reset(new Node<T>{val, key, n->height+1, n});
+                return n->height+1;
             }
 
-            insert_helper(key,val,n->left);
-        } else {
-            if (!n->right) {
-                n->right.reset(new Node<T>{val, key, n});
-                return;
-            }
-
-            insert_helper(key, val,n->right);
+            return insert_helper(key,val,n->left);
         }
+
+        if (!n->right) {
+            n->right.reset(new Node<T>{val, key,n->height+1,n});
+            return n->height+1;
+        }
+
+        return insert_helper(key, val,n->right);
     }
 
     void remove_helper(size_t key)
     {
-        auto& n = search_helper(root, key);
-        if (!n) return;
+        auto& removed = search_helper(root, key);
+        if (!removed) return;
 
-        switch (count_child(n))
+        switch (count_child(removed))
         {
         case CHILD_ZERO:
-            if (n != root) {
-                n->parent.remove_child(key);
+            if (removed != root) {
+                removed->parent.remove_child(key);
             }
             break;
         case CHILD_ONE:
-            auto& child = (n->left) ? n->left : n->right;
-            if (n == root) {
+            auto& child = (removed->left) ? removed->left : removed->right;
+            if (removed == root) {
                 root.reset(child.realese());
             } else {
-                n.parent_to_child(child);
+                removed.parent_to_child(child);
             }
             break;
         case CHILD_TWO:
-            // implement
+            /*auto& prev = n; // prev always has empty right
+            auto& prev_left_child = prev->left;
+            auto& removed_right = n->right;
+
+            if (removed == root) {
+                //
+            } else {
+                removed.parent_to_child(prev);
+            }
+
+            break;*/
             break;
         }
-        n.reset();
+        removed.reset();
     }
 public:
     void print_tree()
     {
-        print_tree_helper(root);
+        std::cout << Node<T>::pretty(root) << '\n';
+        auto nodes = print_tree_helper(root->left, root->right);
+        for(size_t i = 0; i < nodes.size(); ++i)
+        {
+            for(auto it = nodes[i].begin(); it != nodes[i].end(); ++it) std::cout << *it << " ";
+            std::cout << std::endl;
+        }
     };
 
     bool search(size_t key)
@@ -161,7 +216,8 @@ public:
             return;
         }
 
-        insert_helper(key, val, root);
+        auto height = insert_helper(key, val, root);
+        if (height > max_height) max_height = height;
     }
 
     void remove(size_t key)
