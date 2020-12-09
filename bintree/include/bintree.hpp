@@ -81,14 +81,10 @@ struct Node
         return CHILD_ZERO;
     }
 
-    static std::string pretty(std::shared_ptr<Node<T>>& n)
+    std::string pretty()
     {
-        if (!n) {
-            return "empty";
-        }
-
         std::stringstream str;
-        str << n->val << "(" << n->key << ")";
+        str << val;
         return str.str();
     }
 };
@@ -100,31 +96,45 @@ private:
     using node = std::shared_ptr<Node<T>>;
     node root = nullptr;
     size_t max_height = 0;  // for print target
-    std::vector<std::vector<std::string>> print_tree_helper(node& left, node& right)
+    std::vector<std::vector<std::string>> print_tree_helper(node& n)
     {
-        std::vector<std::vector<std::string>> nodes = {{Node<T>::pretty(left), Node<T>::pretty(right)}};
-        
+        std::vector<std::vector<std::string>> nodes = {{n->pretty()}};
+
         std::vector<std::vector<std::string>> left_childs;
-        if (left) {
-            left_childs = print_tree_helper(left->left, left->right);
+        if(n->left) {
+            left_childs = print_tree_helper(n->left);
+        } else {
+            left_childs.push_back({"_"});
         }
 
         std::vector<std::vector<std::string>> right_childs;
-        if (right) {
-            right_childs = print_tree_helper(right->left, right->right);
+        if(n->right) {
+            right_childs = print_tree_helper(n->right);
+        } else {
+            right_childs.push_back({"_"});
         }
 
-        size_t l = 0, r = 0;
-        while (l < left_childs.size() || r < right_childs.size())
+        auto max = (left_childs.size() > right_childs.size()) ? left_childs.size() : right_childs.size();
+        for(size_t i = 0; i < max; ++i)
         {
-            std::vector<std::string> temps;
-            if (l < left_childs.size()) temps.insert(temps.end(), left_childs[l].begin(),left_childs[l].end());
-            if (r < right_childs.size()) temps.insert(temps.end(),right_childs[r].begin(),right_childs[r].end());
-            nodes.push_back(temps);
+            std::vector<std::string> temp;
+            if(i  >= left_childs.size()) {
+                auto sz = right_childs[i].size();
+                std::vector<std::string> do_it(sz, "_");
+                left_childs.push_back(do_it);
+            }
 
-            ++l, ++r;
+            if (i >= right_childs.size()) {
+                auto sz = left_childs[i].size();
+                std::vector<std::string> do_it(sz, "_");
+                right_childs.push_back(do_it);
+            }
+
+            temp.insert(temp.end(), left_childs[i].begin(),left_childs[i].end());
+            temp.insert(temp.end(), right_childs[i].begin(),right_childs[i].end());
+            nodes.push_back(temp);
         }
-        
+
         return nodes;
     }
 
@@ -194,8 +204,7 @@ private:
 public:
     void print_tree()
     {
-        std::cout << Node<T>::pretty(root) << '\n';
-        auto nodes = print_tree_helper(root->left, root->right);
+        auto nodes = print_tree_helper(root);
         for(size_t i = 0; i < nodes.size(); ++i)
         {
             for(auto it = nodes[i].begin(); it != nodes[i].end(); ++it) std::cout << *it << " ";
