@@ -84,7 +84,11 @@ struct Node
     std::string pretty()
     {
         std::stringstream str;
-        str << val;
+        if (val < 10) {
+            str << 0 << val;
+        } else {
+            str << val;
+        }
         return str.str();
     }
 };
@@ -96,22 +100,22 @@ private:
     using node = std::shared_ptr<Node<T>>;
     node root = nullptr;
     size_t max_height = 0;  // for print target
-    std::vector<std::vector<std::string>> print_tree_helper(node& n)
+    std::vector<std::vector<std::string>> nodes_by_level(node& n)
     {
         std::vector<std::vector<std::string>> nodes = {{n->pretty()}};
 
         std::vector<std::vector<std::string>> left_childs;
         if(n->left) {
-            left_childs = print_tree_helper(n->left);
+            left_childs = nodes_by_level(n->left);
         } else {
-            left_childs.push_back({"_"});
+            left_childs.push_back({"XX"});
         }
 
         std::vector<std::vector<std::string>> right_childs;
         if(n->right) {
-            right_childs = print_tree_helper(n->right);
+            right_childs = nodes_by_level(n->right);
         } else {
-            right_childs.push_back({"_"});
+            right_childs.push_back({"XX"});
         }
 
         auto max = (left_childs.size() > right_childs.size()) ? left_childs.size() : right_childs.size();
@@ -120,13 +124,13 @@ private:
             std::vector<std::string> temp;
             if(i  >= left_childs.size()) {
                 auto sz = right_childs[i].size();
-                std::vector<std::string> do_it(sz, "_");
+                std::vector<std::string> do_it(sz, "XX");
                 left_childs.push_back(do_it);
             }
 
             if (i >= right_childs.size()) {
                 auto sz = left_childs[i].size();
-                std::vector<std::string> do_it(sz, "_");
+                std::vector<std::string> do_it(sz, "XX");
                 right_childs.push_back(do_it);
             }
 
@@ -204,11 +208,24 @@ private:
 public:
     void print_tree()
     {
-        auto nodes = print_tree_helper(root);
-        for(size_t i = 0; i < nodes.size(); ++i)
+        auto nodes = nodes_by_level(root);
+        auto max_size = nodes[nodes.size()-1].size() * 2; // refact this
+        size_t offset = 0;
+        for(size_t i = 0; i < nodes.size()-1; ++i)
         {
-            for(auto it = nodes[i].begin(); it != nodes[i].end(); ++it) std::cout << *it << " ";
-            std::cout << std::endl;
+            auto counts = nodes[i].size();
+            auto before_nodes = (max_size-counts-(counts-1)*offset) / 2;
+            std::cout << '|' << std::setfill('_') <<  std::setw(before_nodes+1);
+            for(size_t j = 0; j < nodes[i].size(); ++j)
+            {
+                std::cout << nodes[i][j];
+                if (j != nodes[i].size()-1){
+                    std::cout << std::setfill('_') << std::setw(offset+1);
+                } else {
+                    std::cout << std::setfill('_') << std::setw(before_nodes+1) << '|' << std::endl;
+                }
+            }
+            offset = before_nodes;
         }
     };
 
