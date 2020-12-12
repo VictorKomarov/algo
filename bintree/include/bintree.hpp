@@ -48,27 +48,29 @@ struct Node
         }
     }
 
-    std::shared_ptr<Node<T>>& prev_node()
+    std::shared_ptr<Node<T>> prev_node()
     { // case when no childs
-        auto& last_leaf = [](auto& self, std::shared_ptr<Node<T>>& n) -> std::shared_ptr<Node<T>>& {
-            if (n->right) return n;
+        auto last_leaf = [](auto& self, std::shared_ptr<Node<T>>& n) -> std::shared_ptr<Node<T>> {
+            if (!n->right) return n;
             return self(self, n->right);
-        }(last_leaf, left);
+        };
 
-        return last_leaf;
+        return last_leaf(last_leaf, left);
     }
 
-    void parent_to_child(std::shared_ptr<Node<T>>& child)
+    void parent_to(std::shared_ptr<Node<T>>& node)
     {
         switch (my_dir())
         {
         case ROOT:
             return;
         case CHILD_LEFT:
-            parent->left->reset(child.realese());
+            node->parent = parent;
+            parent->left = node;
             break;
         case CHILD_RIGHT:
-            parent->right->reset(child.realese());
+            node->parent = parent;
+            parent->right = node;
             break;
         }
     }
@@ -84,11 +86,7 @@ struct Node
     std::string pretty()
     {
         std::stringstream str;
-        if (val < 10) {
-            str << 0 << val;
-        } else {
-            str << val;
-        }
+        str << val;
         return str.str();
     }
 };
@@ -108,14 +106,14 @@ private:
         if(n->left) {
             left_childs = nodes_by_level(n->left);
         } else {
-            left_childs.push_back({"XX"});
+            left_childs.push_back({"X"});
         }
 
         std::vector<std::vector<std::string>> right_childs;
         if(n->right) {
             right_childs = nodes_by_level(n->right);
         } else {
-            right_childs.push_back({"XX"});
+            right_childs.push_back({"X"});
         }
 
         auto max = (left_childs.size() > right_childs.size()) ? left_childs.size() : right_childs.size();
@@ -124,14 +122,12 @@ private:
             std::vector<std::string> temp;
             if(i  >= left_childs.size()) {
                 auto sz = right_childs[i].size();
-                std::vector<std::string> do_it(sz, "XX");
-                left_childs.push_back(do_it);
+                left_childs.push_back(std::vector<std::string>(sz, "X"));
             }
 
             if (i >= right_childs.size()) {
                 auto sz = left_childs[i].size();
-                std::vector<std::string> do_it(sz, "XX");
-                right_childs.push_back(do_it);
+                right_childs.push_back(std::vector<std::string>(sz, "X"));
             }
 
             temp.insert(temp.end(), left_childs[i].begin(),left_childs[i].end());
@@ -171,45 +167,56 @@ private:
 
     void remove_helper(size_t key)
     {
-        auto& removed = search_helper(root, key);
+        auto removed = search_helper(root, key);
         if (!removed) return;
 
-        switch (count_child(removed))
+        switch (removed->count_childs())
         {
         case CHILD_ZERO:
-            if (removed != root) {
-                removed->parent.remove_child(key);
+            if (root == removed) {
+                root.reset();
+            } else {
+                removed->parent->remove_child(key);
             }
             break;
         case CHILD_ONE:
-            auto& child = (removed->left) ? removed->left : removed->right;
-            if (removed == root) {
-                root.reset(child.realese());
+            if(root == removed) {
+                root = (removed->left) ? removed->left : removed->right; 
             } else {
-                removed.parent_to_child(child);
+                auto child = (removed->left) ? removed->left : removed->right;
+                removed->parent_to(child);
             }
             break;
         case CHILD_TWO:
-            /*auto& prev = n; // prev always has empty right
-            auto& prev_left_child = prev->left;
-            auto& removed_right = n->right;
-
-            if (removed == root) {
-                //
-            } else {
-                removed.parent_to_child(prev);
+            auto prev = removed->prev_node(); //always have empty right;
+            
+            if (prev->parent->left != prev) {
+                if(!prev->left) {
+                    prev->left = removed->left;
+                    removed->left->parent = prev; 
+                }
             }
+        
 
-            break;*/
+            prev->right = removed->right;
+            removed->right->parent = prev;
+            removed->parent_to(prev);
             break;
         }
+
+        std::cout << "Before reset " << removed.use_count() << std::endl;
         removed.reset();
     }
 public:
     void print_tree()
     {
+        if (!root) {
+            std::cout << "Empty" << std::endl;
+            return;
+        }
+
         auto nodes = nodes_by_level(root);
-        auto max_size = nodes[nodes.size()-1].size() * 2; // refact this
+        auto max_size = nodes[nodes.size()-2].size() * 2; // refact this
         size_t offset = 0;
         for(size_t i = 0; i < nodes.size()-1; ++i)
         {
