@@ -51,7 +51,10 @@ struct Node
     std::shared_ptr<Node<T>> prev_node()
     { // case when no childs
         auto last_leaf = [](auto& self, std::shared_ptr<Node<T>>& n) -> std::shared_ptr<Node<T>> {
-            if (!n->right) return n;
+            if (!n->right) {
+                return n;
+            }
+
             return self(self, n->right);
         };
 
@@ -189,17 +192,14 @@ private:
             break;
         case CHILD_TWO:
             auto prev = removed->prev_node(); //always have empty right;
-            
-            if (prev->parent->left != prev) {
-                if(!prev->left) {
-                    prev->left = removed->left;
-                    removed->left->parent = prev; 
-                }
-            }
-        
+
+            prev->left = removed->left;
+            removed->left->right.reset();
+            removed->left->parent = prev; 
 
             prev->right = removed->right;
             removed->right->parent = prev;
+            
             removed->parent_to(prev);
             break;
         }
