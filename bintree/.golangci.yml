@@ -5,11 +5,9 @@ linters:
     - dogsled
     - gocyclo
     - goimports
-    - golint
     - gosec
     - gosimple
     - govet
-    - ineffassign
     - interfacer
     - lll
     - megacheck
@@ -25,6 +23,8 @@ linters:
 
   disable:
     - errcheck
+    - ineffassign
+    - golint
 
 run:
   timeout: 5m
