@@ -1,17 +1,31 @@
 package main
 
+import (
+	"errors"
+	"fmt"
+)
+
 var ErrDuplicate = errors.New("key is duplicate")
 
 type Node struct {
-	Key         int
-	Value       interface{}
+	Key   int
+	Value interface{}
 	Relationship
 }
 
 type Relationship struct {
-	Left *Node
-	Right *Node
+	Left   *Node
+	Right  *Node
 	Parent *Node
+}
+
+type BST struct {
+	Root *Node
+	//size ...
+}
+
+func NewBST() *BST {
+	return &BST{}
 }
 
 func NewNode(key int, val interface{}) *Node {
@@ -21,50 +35,55 @@ func NewNode(key int, val interface{}) *Node {
 	}
 }
 
-// whar about Value ??
-func (n *Node) Clone() &Node{
-	return &Node{
-		Key: n.Key,
-		Value: n.Value,
-		Right: n.Right,
-		Left: n.Left,
-		Parent: n.Parent,
+func (b *BST) Insert(key int, val interface{}) error {
+	if b.Root == nil {
+		b.Root = NewNode(key, val)
+
+		return nil
 	}
+
+	return insert(b.Root, key, val)
 }
 
-func Insert(root *Node, key int, val interface{}) error {
-	if root == nil {
-		return nil // return error is better strategy
+func insert(node *Node, key int, val interface{}) error {
+	if node.Key == key {
+		return fmt.Errorf("%w %d == %d", ErrDuplicate, node.Key, key)
 	}
 
-	if root.Key == key {
-		return fmt.Errorf("%w %d == %d", ErrDuplicate, root.Key, key)
-	}
-
-	if key > root.Key {
-		if root.Right != nil {
-			Insert(root.Right, key, val)
+	if key > node.Key {
+		if node.Right != nil {
+			return insert(node.Right, key, val)
 		}
 
-		root.Right = &Node{
-			Key: key,
+		node.Right = &Node{
+			Key:   key,
 			Value: val,
-			Parent: root,
+			Relationship: Relationship{
+				Parent: node,
+			},
 		}
 	} else {
-		if root.Left != nil {
-			Insert(root.Left, key, val)
+		if node.Left != nil {
+			return insert(node.Left, key, val)
 		}
 
-		root.Left = &Node{
-			Key: key,
+		node.Left = &Node{
+			Key:   key,
 			Value: val,
-			Parent: root
+			Relationship: Relationship{
+				Parent: node,
+			},
 		}
 	}
+
+	return nil
 }
 
-func Search(node *Node, key int) *Node {
+func (b *BST) Search(key int) *Node {
+	return search(b.Root, key)
+}
+
+func search(node *Node, key int) *Node {
 	if node == nil {
 		return nil
 	}
@@ -74,83 +93,72 @@ func Search(node *Node, key int) *Node {
 	}
 
 	if node.Key > key {
-		return Search(node.Left, key)
+		return search(node.Left, key)
 	}
 
-	return Search(node.Right, Key)
+	return search(node.Right, key)
 }
 
-func Remove(node *Node, key int) {
-	removed := Search(node, key)
+func (b *BST) Remove(key int) {
+	removed := search(b.Root, key)
 	if removed == nil {
 		return
 	}
 
-	parent := removed.Parent
-	switch countNodeChilds(removed){
+	switch countNodeChilds(removed) {
 	case 0:
-		if parent != nil {
-			removed.RemoveChildByKey(removed.Key)
+		parent := removed.Parent
+		if parent == nil {
+			b.Root = nil
+		} else {
+
+			if parent.Left == removed {
+				parent.Left = nil
+			}
+
+			if parent.Right == removed {
+				parent.Right = nil
+			}
 		}
 	case 1:
 		сhild := removed.Left
-		if child == nil {
-			child = removed.Right
+		if сhild == nil {
+			сhild = removed.Right
 		}
 
-		if parent != nil {
-			isLeft := parent.Left == removed
-
-			if isLeft {
-				parent.Left = child
-			} else {
-				parent.Right = child
-			}
-
-			child.Parent = parent
-		} else { // case when we delete root
-			node = child
-			node.Parent = nil
-		}
-	case 2:		
-		prev := prevElem(removed.Left) //always has nil right
+		b.adoptNodeInstead(removed.Parent, removed, сhild)
+	case 2:
+		prev := prevElem(removed.Left)
 		prevRel := prev.Relationship
+		isRight := removed.Left != prev
 
-		if prev == removed.Left {
-			if parent != nil {
-				prev.Right = removed.Right
-				if removed.Right != nil { // to func
-					removed.Right.Parent = prev
-				}
+		b.adoptNodeInstead(removed.Parent, removed, prev)
+		prev.Right = removed.Right
+		removed.Right.Parent = prev
 
-				prev.Parent = parent
-				isLeft := parent.Left == removed
-				if isLeft {
-					parent.Left = prev
-				} else {
-					parent.Right = prev
-				}
-			} else {
-				// delete root think about this case
-			}
-		} else {
-			if parent != nil {
-				prevRel.Parent.Right = prevRel.Left
-				prevRel.Left.Parent = prevRel.Parent //not nill check
-
-				// only swap val and key ??
+		if isRight {
+			removed.Left.Right = prevRel.Left
+			if prevRel.Left != nil {
+				prevRel.Left.Parent = removed.Left
 			}
 		}
 	}
 }
 
-func (n *Node) RemoveChildByKey(key int) {
-	if n.Left != nil && n.Left.Key == key {
-		n.Left = nil
+func (b *BST) adoptNodeInstead(parent, removed, node *Node) {
+	node.Parent = parent
+	if parent == nil {
+		b.Root = node
+
+		return
 	}
 
-	if n.Right != nil && n.Right.Key == key {
-		n.Right = nil
+	if parent.Left == removed {
+		parent.Left = node
+	}
+
+	if parent.Right == removed {
+		parent.Right = node
 	}
 }
 
@@ -162,7 +170,7 @@ func countNodeChilds(node *Node) int {
 	if node.Left != nil && node.Right != nil {
 		return 2
 	}
-	
+
 	if node.Left != nil || node.Right != nil {
 		return 1
 	}
@@ -171,7 +179,7 @@ func countNodeChilds(node *Node) int {
 }
 
 //TODO::change this func for node without child
-func prevElem(node *Node) *Node{
+func prevElem(node *Node) *Node {
 	if node.Right != nil {
 		return prevElem(node.Right)
 	}
