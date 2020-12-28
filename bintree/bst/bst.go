@@ -1,4 +1,4 @@
-package main
+package bst
 
 import (
 	"errors"
@@ -32,6 +32,22 @@ func NewNode(key int, val interface{}) *Node {
 	return &Node{
 		Key:   key,
 		Value: val,
+	}
+}
+
+func (b *BST) WalkInorder(f func(node *Node)) {
+	walkInorder(b.Root, f)
+}
+
+func walkInorder(node *Node, f func(node *Node)) {
+	if node.Left != nil {
+		walkInorder(node.Left, f)
+	}
+
+	f(node)
+
+	if node.Right != nil {
+		walkInorder(node.Right, f)
 	}
 }
 
