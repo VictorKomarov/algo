@@ -36,7 +36,9 @@ func NewNode(key int, val interface{}) *Node {
 }
 
 func (b *BST) WalkInorder(f func(node *Node)) {
-	walkInorder(b.Root, f)
+	if b.Root != nil {
+		walkInorder(b.Root, f)
+	}
 }
 
 func walkInorder(node *Node, f func(node *Node)) {
@@ -95,8 +97,8 @@ func insert(node *Node, key int, val interface{}) error {
 	return nil
 }
 
-func (b *BST) Search(key int) *Node {
-	return search(b.Root, key)
+func (b *BST) Search(key int) bool {
+	return search(b.Root, key) != nil
 }
 
 func search(node *Node, key int) *Node {
@@ -151,6 +153,9 @@ func (b *BST) Remove(key int) {
 		b.adoptNodeInstead(removed.Parent, removed, prev)
 		prev.Right = removed.Right
 		removed.Right.Parent = prev
+
+		prev.Left = removed.Left
+		removed.Left.Parent = prev
 
 		if isRight {
 			removed.Left.Right = prevRel.Left
