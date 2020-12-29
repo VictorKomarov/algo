@@ -154,8 +154,10 @@ func (b *BST) Remove(key int) {
 		prev.Right = removed.Right
 		removed.Right.Parent = prev
 
-		prev.Left = removed.Left
-		removed.Left.Parent = prev
+		if prev.Left != nil {
+			prev.Left = removed.Left
+			removed.Left.Parent = prev
+		}
 
 		if isRight {
 			removed.Left.Right = prevRel.Left

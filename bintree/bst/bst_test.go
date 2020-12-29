@@ -131,6 +131,12 @@ func TestRemove(t *testing.T) {
 			Remove:   8,
 			Expected: []int{3, 4, 5, 6, 10},
 		},
+		{
+			Name:     "Red Son From Remove Node 2 Childs",
+			Steps:    []int{8, 4, 10, 3, 6, 5},
+			Remove:   4,
+			Expected: []int{3, 5, 6, 8, 10},
+		},
 	}
 
 	for _, tC := range testCases {
