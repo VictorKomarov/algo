@@ -15,15 +15,9 @@ const (
 )
 
 type Node struct {
-	Key   int
-	Value interface{}
-	Relationship
-}
-
-type Relationship struct {
-	Left   *Node
-	Right  *Node
-	Parent *Node
+	Key                 int
+	Value               interface{}
+	Left, Right, Parent *Node
 }
 
 type BST struct {
@@ -81,11 +75,9 @@ func insert(node *Node, key int, val interface{}) error {
 		}
 
 		node.Right = &Node{
-			Key:   key,
-			Value: val,
-			Relationship: Relationship{
-				Parent: node,
-			},
+			Key:    key,
+			Value:  val,
+			Parent: node,
 		}
 	} else {
 		if node.Left != nil {
@@ -93,11 +85,9 @@ func insert(node *Node, key int, val interface{}) error {
 		}
 
 		node.Left = &Node{
-			Key:   key,
-			Value: val,
-			Relationship: Relationship{
-				Parent: node,
-			},
+			Key:    key,
+			Value:  val,
+			Parent: node,
 		}
 	}
 
