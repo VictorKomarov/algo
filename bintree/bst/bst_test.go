@@ -137,6 +137,12 @@ func TestRemove(t *testing.T) {
 			Remove:   4,
 			Expected: []int{3, 5, 6, 8, 10},
 		},
+		{
+			Name:     "Random case from Google",
+			Steps:    []int{15, 10, 20, 8, 12, 18, 25, 16, 19, 30},
+			Remove:   20,
+			Expected: []int{8, 10, 12, 15, 16, 18, 19, 25, 30},
+		},
 	}
 
 	for _, tC := range testCases {

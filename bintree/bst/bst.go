@@ -135,15 +135,15 @@ func (b *BST) Remove(key int) {
 		parent := removed.Parent
 		if parent == nil {
 			b.Root = nil
-		} else {
+			return
+		}
 
-			if parent.Left == removed {
-				parent.Left = nil
-			}
+		if parent.Left == removed {
+			parent.Left = nil
+		}
 
-			if parent.Right == removed {
-				parent.Right = nil
-			}
+		if parent.Right == removed {
+			parent.Right = nil
 		}
 	case 1:
 		сhild := removed.Left
@@ -151,31 +151,26 @@ func (b *BST) Remove(key int) {
 			сhild = removed.Right
 		}
 
-		b.adoptNodeInstead(removed.Parent, removed, сhild)
+		b.adoptNodeInstead(removed, сhild)
 	case 2:
 		prev := prevElem(removed.Left)
-		prevRel := prev.Relationship
-		isRight := removed.Left != prev
-
-		b.adoptNodeInstead(removed.Parent, removed, prev)
-		prev.Right = removed.Right
-		removed.Right.Parent = prev
-
-		if prev.Left != nil {
+		if removed.Left != prev {
+			removed.Left.link(prev.Left, Right)
 			prev.link(removed.Left, Left)
 		}
 
-		if isRight {
-			removed.Left.link(prevRel.Left, Right)
-		}
+		prev.link(removed.Right, Right)
+
+		b.adoptNodeInstead(removed, prev)
 	}
 }
 
-func (b *BST) adoptNodeInstead(parent, removed, node *Node) {
+func (b *BST) adoptNodeInstead(removed, node *Node) {
+	parent := removed.Parent
 	node.Parent = parent
+
 	if parent == nil {
 		b.Root = node
-
 		return
 	}
 
