@@ -54,3 +54,13 @@ func (a *AVl) smallLeftRotate(node *bst.Node) {
 	a.core.AdoptNodeInstead(node, node.Right)
 	node.Link(left, bst.Right)
 }
+
+func (a *AVl) bigLeftRotate(node *bst.Node) {
+	a.smallRightRotate(node.Right)
+	a.smallLeftRotate(node)
+}
+
+func (a *AVl) bigRightRotate(node *bst.Node) {
+	a.smallLeftRotate(node.Left)
+	a.smallRightRotate(node)
+}
