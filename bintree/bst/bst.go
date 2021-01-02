@@ -17,26 +17,28 @@ const (
 type Node struct {
 	Key                 int
 	Value               interface{}
+	Height              int
 	Left, Right, Parent *Node
 }
 
-type BST struct {
+type Tree struct {
 	Root *Node
-	//size ...
 }
 
-func NewBST() *BST {
-	return &BST{}
+func NewBST() *Tree {
+	return &Tree{}
 }
 
-func NewNode(key int, val interface{}) *Node {
+func NewNode(key int, val interface{}, parent *Node) *Node {
 	return &Node{
-		Key:   key,
-		Value: val,
+		Key:    key,
+		Value:  val,
+		Height: 1,
+		Parent: parent,
 	}
 }
 
-func (b *BST) WalkInorder(f func(node *Node)) {
+func (b *Tree) WalkInorder(f func(node *Node)) {
 	if b.Root != nil {
 		walkInorder(b.Root, f)
 	}
@@ -54,9 +56,9 @@ func walkInorder(node *Node, f func(node *Node)) {
 	}
 }
 
-func (b *BST) Insert(key int, val interface{}) error {
+func (b *Tree) Insert(key int, val interface{}) error {
 	if b.Root == nil {
-		b.Root = NewNode(key, val)
+		b.Root = NewNode(key, val, nil)
 
 		return nil
 	}
@@ -74,27 +76,19 @@ func insert(node *Node, key int, val interface{}) error {
 			return insert(node.Right, key, val)
 		}
 
-		node.Right = &Node{
-			Key:    key,
-			Value:  val,
-			Parent: node,
-		}
+		node.Right = NewNode(key, val, node)
 	} else {
 		if node.Left != nil {
 			return insert(node.Left, key, val)
 		}
 
-		node.Left = &Node{
-			Key:    key,
-			Value:  val,
-			Parent: node,
-		}
+		node.Left = NewNode(key, val, node)
 	}
 
 	return nil
 }
 
-func (b *BST) Search(key int) bool {
+func (b *Tree) Search(key int) bool {
 	return search(b.Root, key) != nil
 }
 
@@ -114,7 +108,7 @@ func search(node *Node, key int) *Node {
 	return search(node.Right, key)
 }
 
-func (b *BST) Remove(key int) {
+func (b *Tree) Remove(key int) {
 	removed := search(b.Root, key)
 	if removed == nil {
 		return
@@ -122,28 +116,28 @@ func (b *BST) Remove(key int) {
 
 	switch countNodeChilds(removed) {
 	case 0:
-		b.adoptNodeInstead(removed, nil)
+		b.AdoptNodeInstead(removed, nil)
 	case 1:
 		сhild := removed.Left
 		if сhild == nil {
 			сhild = removed.Right
 		}
 
-		b.adoptNodeInstead(removed, сhild)
+		b.AdoptNodeInstead(removed, сhild)
 	case 2:
 		prev := prevElem(removed.Left)
 		if removed.Left != prev {
-			removed.Left.link(prev.Left, Right)
-			prev.link(removed.Left, Left)
+			removed.Left.Link(prev.Left, Right)
+			prev.Link(removed.Left, Left)
 		}
 
-		prev.link(removed.Right, Right)
+		prev.Link(removed.Right, Right)
 
-		b.adoptNodeInstead(removed, prev)
+		b.AdoptNodeInstead(removed, prev)
 	}
 }
 
-func (b *BST) adoptNodeInstead(removed, node *Node) {
+func (b *Tree) AdoptNodeInstead(removed, node *Node) {
 	parent := removed.Parent
 
 	if node != nil {
@@ -165,7 +159,7 @@ func (b *BST) adoptNodeInstead(removed, node *Node) {
 	}
 }
 
-func (n *Node) link(child *Node, direction Direction) {
+func (n *Node) Link(child *Node, direction Direction) {
 	switch direction {
 	case Left:
 		n.Left = child
