@@ -7,6 +7,13 @@ import (
 
 var ErrDuplicate = errors.New("key is duplicate")
 
+type Direction string
+
+const (
+	Left  Direction = "LEFT"
+	Right Direction = "RIGHT"
+)
+
 type Node struct {
 	Key   int
 	Value interface{}
@@ -155,15 +162,11 @@ func (b *BST) Remove(key int) {
 		removed.Right.Parent = prev
 
 		if prev.Left != nil {
-			prev.Left = removed.Left
-			removed.Left.Parent = prev
+			prev.link(removed.Left, Left)
 		}
 
 		if isRight {
-			removed.Left.Right = prevRel.Left
-			if prevRel.Left != nil {
-				prevRel.Left.Parent = removed.Left
-			}
+			removed.Left.link(prevRel.Left, Right)
 		}
 	}
 }
@@ -182,6 +185,21 @@ func (b *BST) adoptNodeInstead(parent, removed, node *Node) {
 
 	if parent.Right == removed {
 		parent.Right = node
+	}
+}
+
+func (n *Node) link(child *Node, direction Direction) {
+	switch direction {
+	case Left:
+		n.Left = child
+	case Right:
+		n.Right = child
+	default:
+		return
+	}
+
+	if child != nil {
+		child.Parent = n
 	}
 }
 
