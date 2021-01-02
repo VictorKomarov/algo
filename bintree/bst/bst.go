@@ -132,19 +132,7 @@ func (b *BST) Remove(key int) {
 
 	switch countNodeChilds(removed) {
 	case 0:
-		parent := removed.Parent
-		if parent == nil {
-			b.Root = nil
-			return
-		}
-
-		if parent.Left == removed {
-			parent.Left = nil
-		}
-
-		if parent.Right == removed {
-			parent.Right = nil
-		}
+		b.adoptNodeInstead(removed, nil)
 	case 1:
 		сhild := removed.Left
 		if сhild == nil {
@@ -167,10 +155,14 @@ func (b *BST) Remove(key int) {
 
 func (b *BST) adoptNodeInstead(removed, node *Node) {
 	parent := removed.Parent
-	node.Parent = parent
+
+	if node != nil {
+		node.Parent = parent
+	}
 
 	if parent == nil {
 		b.Root = node
+
 		return
 	}
 
