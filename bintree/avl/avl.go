@@ -53,11 +53,11 @@ func (a *AVl) balance(node *bst.Node) {
 			a.bigLeftRotate(node)
 		}
 	case -2:
-		if node.Left != nil && height(node.Left.Right) > height(node.Left.Left) {
-			a.smallRightRotate(node)
-		} else {
-			a.bigRightRotate(node)
-		}
+		//if node.Left != nil && height(node.Left.Right) > height(node.Left.Left) {
+		a.smallRightRotate(node)
+		//} else {
+		//a.bigRightRotate(node)
+		//}
 	default:
 		return
 	}
