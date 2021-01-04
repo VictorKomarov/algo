@@ -56,43 +56,43 @@ func walkInorder(node *Node, f func(node *Node)) {
 	}
 }
 
-func (b *Tree) Insert(key int, val interface{}) error {
+func (b *Tree) Insert(key int, val interface{}) (*Node, error) {
 	if b.Root == nil {
 		b.Root = NewNode(key, val, nil)
 
-		return nil
+		return b.Root, nil
 	}
 
 	return insert(b.Root, key, val)
 }
 
-func insert(node *Node, key int, val interface{}) error {
+func insert(node *Node, key int, val interface{}) (*Node, error) {
 	if node.Key == key {
-		return fmt.Errorf("%w %d == %d", ErrDuplicate, node.Key, key)
+		return nil, fmt.Errorf("%w %d == %d", ErrDuplicate, node.Key, key)
 	}
 
 	if key > node.Key {
 		if node.Right != nil {
 			return insert(node.Right, key, val)
 		}
-
 		node.Right = NewNode(key, val, node)
-	} else {
-		if node.Left != nil {
-			return insert(node.Left, key, val)
-		}
 
-		node.Left = NewNode(key, val, node)
+		return node.Right, nil
 	}
 
-	return nil
+	if node.Left != nil {
+		return insert(node.Left, key, val)
+	}
+	node.Left = NewNode(key, val, node)
+
+	return node.Left, nil
 }
 
-func (b *Tree) Search(key int) bool {
-	return search(b.Root, key) != nil
+func (b *Tree) Contain(key int) bool {
+	return Search(b.Root, key) != nil
 }
 
-func search(node *Node, key int) *Node {
+func Search(node *Node, key int) *Node {
 	if node == nil {
 		return nil
 	}
@@ -102,14 +102,14 @@ func search(node *Node, key int) *Node {
 	}
 
 	if node.Key > key {
-		return search(node.Left, key)
+		return Search(node.Left, key)
 	}
 
-	return search(node.Right, key)
+	return Search(node.Right, key)
 }
 
 func (b *Tree) Remove(key int) {
-	removed := search(b.Root, key)
+	removed := Search(b.Root, key)
 	if removed == nil {
 		return
 	}

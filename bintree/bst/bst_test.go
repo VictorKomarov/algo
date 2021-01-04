@@ -85,7 +85,7 @@ func TestSearch(t *testing.T) {
 			b.Insert(key, key)
 		}
 
-		require.Equal(t, tCase.Expected, b.Search(tCase.Find), tCase.Name)
+		require.Equal(t, tCase.Expected, b.Contain(tCase.Find), tCase.Name)
 	}
 }
 
