@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSmallLeftRotate(t *testing.T) {
+func TestRotate(t *testing.T) {
 	testCases := []struct {
 		desc        string
 		steps       []int
@@ -15,9 +15,28 @@ func TestSmallLeftRotate(t *testing.T) {
 		expected    []int
 	}{
 		{
-			desc:        "small left rotate#1",
+			desc:        "SmallLeftRotate",
 			steps:       []int{6, 4, 8, 7, 11},
-			rotatedFrom: 8,
+			rotatedFrom: 6,
+			expected:    []int{4, 6, 7, 8, 11},
+		},
+		{
+			desc:        "BigLeftRotate",
+			steps:       []int{4, 2, 8, 6, 11, 5, 7},
+			rotatedFrom: 4,
+			expected:    []int{2, 4, 5, 6, 7, 8, 11},
+		},
+		{
+			desc:        "SmallRightRotate",
+			steps:       []int{6, 4, 8, 2, 5},
+			rotatedFrom: 6,
+			expected:    []int{2, 4, 5, 6, 8},
+		},
+		{
+			desc:        "BigRightRotate",
+			steps:       []int{10, 6, 12, 2, 8, 7, 9},
+			rotatedFrom: 10,
+			expected:    []int{2, 6, 7, 8, 9, 10, 12},
 		},
 	}
 	for _, tC := range testCases {
@@ -25,6 +44,32 @@ func TestSmallLeftRotate(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			t.Parallel()
 
+			b := bst.NewBST()
+
+			for _, key := range tC.steps {
+				b.Insert(key, key)
+			}
+
+			node := bst.Search(b.Root, tC.rotatedFrom)
+
+			a := AVl{core: b}
+			switch tC.desc {
+			case "SmallLeftRotate":
+				a.smallLeftRotate(node)
+			case "BigLeftRotate":
+				a.bigLeftRotate(node)
+			case "SmallRightRotate":
+				a.smallRightRotate(node)
+			case "BigRightRotate":
+				a.bigRightRotate(node)
+			}
+
+			actual := make([]int, 0, len(tC.expected))
+			b.WalkInorder(func(node *bst.Node) {
+				actual = append(actual, node.Key)
+			})
+
+			require.Equal(t, tC.expected, actual, tC.desc)
 		})
 	}
 }

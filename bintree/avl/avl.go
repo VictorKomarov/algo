@@ -64,18 +64,18 @@ func (a *AVl) balance(node *bst.Node) {
 }
 
 func (a *AVl) smallRightRotate(node *bst.Node) {
+	a.core.AdoptNodeInstead(node, node.Left)
 	right := node.Left.Right
 	node.Left.Link(node, bst.Right)
-	a.core.AdoptNodeInstead(node, node.Left)
 	node.Link(right, bst.Left)
 	fixHeight(node)
 	fixHeight(right)
 }
 
 func (a *AVl) smallLeftRotate(node *bst.Node) {
+	a.core.AdoptNodeInstead(node, node.Right)
 	left := node.Right.Left
 	node.Right.Link(node, bst.Left)
-	a.core.AdoptNodeInstead(node, node.Right)
 	node.Link(left, bst.Right)
 	fixHeight(node)
 	fixHeight(left)
