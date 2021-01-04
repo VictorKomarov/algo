@@ -105,6 +105,11 @@ func TestAVLInsert(t *testing.T) {
 			steps:    []int{8, 6, 10, 4, 9, 12, 7, 2, 1},
 			expected: []Node{{1, 1}, {2, 2}, {4, 1}, {6, 3}, {7, 1}, {8, 4}, {9, 1}, {10, 2}, {12, 1}},
 		},
+		{
+			desc:     "Big rotate rebalance leaf",
+			steps:    []int{8, 6, 10, 4, 9, 12, 7, 2, 1, 5},
+			expected: []Node{{1, 1}, {2, 2}, {4, 3}, {5, 1}, {6, 2}, {7, 1}, {8, 4}, {9, 1}, {10, 2}, {12, 1}},
+		},
 	}
 
 	for _, tC := range testCases {

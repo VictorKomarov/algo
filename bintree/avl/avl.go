@@ -55,7 +55,7 @@ func (a *AVl) balance(node *bst.Node) {
 		}
 	case -2:
 		left := diffHeight(node.Left)
-		if left == -1 || left == 0 {
+		if left == 1 || left == 0 {
 			a.smallRightRotate(node)
 		} else {
 			a.bigRightRotate(node)
