@@ -47,17 +47,19 @@ func (a *AVl) normalize(node *bst.Node) {
 func (a *AVl) balance(node *bst.Node) {
 	switch diffHeight(node) {
 	case 2:
-		if node.Right != nil && height(node.Right.Left) > height(node.Right.Right) {
+		right := diffHeight(node.Right)
+		if right == -1 || right == 0 {
 			a.smallLeftRotate(node)
 		} else {
 			a.bigLeftRotate(node)
 		}
 	case -2:
-		//if node.Left != nil && height(node.Left.Right) > height(node.Left.Left) {
-		a.smallRightRotate(node)
-		//} else {
-		//a.bigRightRotate(node)
-		//}
+		left := diffHeight(node.Left)
+		if left == -1 || left == 0 {
+			a.smallRightRotate(node)
+		} else {
+			a.bigRightRotate(node)
+		}
 	default:
 		return
 	}
@@ -124,5 +126,9 @@ func fixHeight(node *bst.Node) {
 }
 
 func diffHeight(node *bst.Node) int {
+	if node == nil {
+		return 0
+	}
+
 	return height(node.Right) - height(node.Left)
 }
