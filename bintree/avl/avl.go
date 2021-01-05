@@ -4,12 +4,12 @@ import (
 	"bintree/bst"
 )
 
-type AVl struct {
+type Tree struct {
 	core *bst.Tree
 }
 
-func NewAVL(core *bst.Tree) *AVl {
-	avl := &AVl{
+func New(core *bst.Tree) *Tree {
+	avl := &Tree{
 		core: core,
 	}
 
@@ -17,19 +17,19 @@ func NewAVL(core *bst.Tree) *AVl {
 	return avl
 }
 
-func (a *AVl) Contain(key int) bool {
+func (a *Tree) Contain(key int) bool {
 	return a.core.Contain(key)
 }
 
-func (a *AVl) Search(key int) *bst.Node {
+func (a *Tree) Search(key int) *bst.Node {
 	return bst.Search(a.core.Root, key)
 }
 
-func (a *AVl) Remove(key int) {
+func (a *Tree) Remove(key int) {
 	a.normalize(a.core.Remove(key))
 }
 
-func (a *AVl) Insert(key int, val interface{}) error {
+func (a *Tree) Insert(key int, val interface{}) error {
 	inserted, err := a.core.Insert(key, val)
 	if err != nil {
 		return err
@@ -39,7 +39,7 @@ func (a *AVl) Insert(key int, val interface{}) error {
 	return nil
 }
 
-func (a *AVl) normalize(node *bst.Node) {
+func (a *Tree) normalize(node *bst.Node) {
 	if node == nil {
 		return
 	}
@@ -51,7 +51,7 @@ func (a *AVl) normalize(node *bst.Node) {
 	a.normalize(next)
 }
 
-func (a *AVl) balance(node *bst.Node) {
+func (a *Tree) balance(node *bst.Node) {
 	switch diffHeight(node) {
 	case -2:
 		if diffHeight(node.Right) > 0 {
@@ -70,7 +70,7 @@ func (a *AVl) balance(node *bst.Node) {
 	}
 }
 
-func (a *AVl) smallRightRotate(node *bst.Node) {
+func (a *Tree) smallRightRotate(node *bst.Node) {
 	right := node.Left.Right
 	needToRecalculate := []*bst.Node{node, right, node.Left}
 
@@ -83,7 +83,7 @@ func (a *AVl) smallRightRotate(node *bst.Node) {
 	}
 }
 
-func (a *AVl) smallLeftRotate(node *bst.Node) {
+func (a *Tree) smallLeftRotate(node *bst.Node) {
 	left := node.Right.Left
 	needToRecalculate := []*bst.Node{node, left, node.Right}
 
@@ -96,17 +96,17 @@ func (a *AVl) smallLeftRotate(node *bst.Node) {
 	}
 }
 
-func (a *AVl) bigLeftRotate(node *bst.Node) {
+func (a *Tree) bigLeftRotate(node *bst.Node) {
 	a.smallRightRotate(node.Right)
 	a.smallLeftRotate(node)
 }
 
-func (a *AVl) bigRightRotate(node *bst.Node) {
+func (a *Tree) bigRightRotate(node *bst.Node) {
 	a.smallLeftRotate(node.Left)
 	a.smallRightRotate(node)
 }
 
-func (a *AVl) init() {
+func (a *Tree) init() {
 	nodes := make([]*bst.Node, 0)
 
 	a.core.WalkInorder(func(node *bst.Node) {

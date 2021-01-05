@@ -52,7 +52,7 @@ func TestRotate(t *testing.T) {
 
 			node := bst.Search(b.Root, tC.rotatedFrom)
 
-			a := AVl{core: b}
+			a := Tree{core: b}
 			switch tC.desc {
 			case "SmallLeftRotate":
 				a.smallLeftRotate(node)
@@ -127,7 +127,7 @@ func TestAVLInsert(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			t.Parallel()
 
-			a := NewAVL(bst.NewBST())
+			a := New(bst.NewBST())
 
 			for _, key := range tC.steps {
 				a.Insert(key, key)
@@ -154,7 +154,7 @@ func TestSimpleInitTest(t *testing.T) {
 		b.Insert(key, key)
 	}
 
-	avl := NewAVL(b)
+	avl := New(b)
 
 	actual := make([]Node, 0, 10)
 	avl.core.WalkInorder(func(node *bst.Node) {
@@ -212,7 +212,7 @@ func TestRemove(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			t.Parallel()
 
-			avl := NewAVL(bst.NewBST())
+			avl := New(bst.NewBST())
 			for _, key := range tC.steps {
 				avl.Insert(key, key)
 			}
