@@ -37,8 +37,8 @@ func (a *AVl) normalize(node *bst.Node) {
 		return
 	}
 
-	fixHeight(node)
 	next := node.Parent
+	fixHeight(node)
 	a.balance(node)
 
 	a.normalize(next)
@@ -46,19 +46,17 @@ func (a *AVl) normalize(node *bst.Node) {
 
 func (a *AVl) balance(node *bst.Node) {
 	switch diffHeight(node) {
-	case 2:
-		right := diffHeight(node.Right)
-		if right == -1 || right == 0 {
-			a.smallLeftRotate(node)
-		} else {
-			a.bigLeftRotate(node)
-		}
 	case -2:
-		left := diffHeight(node.Left)
-		if left == -1 || left == 0 {
-			a.smallRightRotate(node)
+		if diffHeight(node.Right) > 0 {
+			a.bigLeftRotate(node)
 		} else {
+			a.smallLeftRotate(node)
+		}
+	case 2:
+		if diffHeight(node.Left) < 0 {
 			a.bigRightRotate(node)
+		} else {
+			a.smallRightRotate(node)
 		}
 	default:
 		return
@@ -66,21 +64,29 @@ func (a *AVl) balance(node *bst.Node) {
 }
 
 func (a *AVl) smallRightRotate(node *bst.Node) {
-	a.core.AdoptNodeInstead(node, node.Left)
 	right := node.Left.Right
+	needToRecalculate := []*bst.Node{node, right, node.Left}
+
+	a.core.AdoptNodeInstead(node, node.Left)
 	node.Left.Link(node, bst.Right)
 	node.Link(right, bst.Left)
-	fixHeight(node)
-	fixHeight(right)
+
+	for _, node := range needToRecalculate {
+		fixHeight(node)
+	}
 }
 
 func (a *AVl) smallLeftRotate(node *bst.Node) {
-	a.core.AdoptNodeInstead(node, node.Right)
 	left := node.Right.Left
+	needToRecalculate := []*bst.Node{node, left, node.Right}
+
+	a.core.AdoptNodeInstead(node, node.Right)
 	node.Right.Link(node, bst.Left)
 	node.Link(left, bst.Right)
-	fixHeight(node)
-	fixHeight(left)
+
+	for _, node := range needToRecalculate {
+		fixHeight(node)
+	}
 }
 
 func (a *AVl) bigLeftRotate(node *bst.Node) {
@@ -130,5 +136,5 @@ func diffHeight(node *bst.Node) int {
 		return 0
 	}
 
-	return height(node.Right) - height(node.Left)
+	return height(node.Left) - height(node.Right)
 }
