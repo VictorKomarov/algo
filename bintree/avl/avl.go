@@ -8,18 +8,25 @@ type AVl struct {
 	core *bst.Tree
 }
 
-func NewAVL() *AVl {
+func NewAVL(core *bst.Tree) *AVl {
 	avl := &AVl{
-		core: bst.NewBST(),
+		core: core,
 	}
 
-	// avl.init()
-
+	avl.init()
 	return avl
 }
 
 func (a *AVl) Contain(key int) bool {
 	return a.core.Contain(key)
+}
+
+func (a *AVl) Search(key int) *bst.Node {
+	return bst.Search(a.core.Root, key)
+}
+
+func (a *AVl) Remove(key int) {
+	a.normalize(a.core.Remove(key))
 }
 
 func (a *AVl) Insert(key int, val interface{}) error {
@@ -106,6 +113,7 @@ func (a *AVl) init() {
 		nodes = append(nodes, node)
 	})
 
+	a.core.Root = nil
 	for i := range nodes {
 		a.Insert(nodes[i].Key, nodes[i].Value)
 	}

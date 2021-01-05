@@ -127,7 +127,7 @@ func TestAVLInsert(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			t.Parallel()
 
-			a := NewAVL()
+			a := NewAVL(bst.NewBST())
 
 			for _, key := range tC.steps {
 				a.Insert(key, key)
@@ -135,6 +135,92 @@ func TestAVLInsert(t *testing.T) {
 
 			actual := make([]Node, 0, len(tC.expected))
 			a.core.WalkInorder(func(node *bst.Node) {
+				actual = append(actual, Node{node.Key, node.Height})
+			})
+
+			require.Equal(t, tC.expected, actual, tC.desc)
+		})
+	}
+}
+
+func TestSimpleInitTest(t *testing.T) {
+	type Node struct {
+		Key    int
+		Height int
+	}
+
+	b := bst.NewBST()
+	for _, key := range []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10} {
+		b.Insert(key, key)
+	}
+
+	avl := NewAVL(b)
+
+	actual := make([]Node, 0, 10)
+	avl.core.WalkInorder(func(node *bst.Node) {
+		actual = append(actual, Node{node.Key, node.Height})
+	})
+
+	require.Equal(t, []Node{{1, 1}, {2, 2}, {3, 1}, {4, 4}, {5, 1}, {6, 2}, {7, 1}, {8, 3}, {9, 2}, {10, 1}}, actual, "init test")
+}
+
+func TestRemove(t *testing.T) {
+	type Node struct {
+		Key    int
+		Height int
+	}
+
+	testCases := []struct {
+		desc     string
+		steps    []int
+		removed  int
+		expected []Node
+	}{
+		{
+			desc:     "Remove root",
+			steps:    []int{10},
+			removed:  10,
+			expected: []Node{},
+		},
+		{
+			desc:     "No remove",
+			steps:    []int{10},
+			removed:  7,
+			expected: []Node{{10, 1}},
+		},
+		{
+			desc:     "Remove left leaf",
+			steps:    []int{6, 4, 10},
+			removed:  10,
+			expected: []Node{{4, 1}, {6, 2}},
+		},
+		{
+			desc:     "Remove right leaf",
+			steps:    []int{6, 4, 10},
+			removed:  4,
+			expected: []Node{{6, 2}, {10, 1}},
+		},
+		{
+			desc:     "No rebalance with one child",
+			steps:    []int{4, 2, 5, 3},
+			removed:  2,
+			expected: []Node{{3, 1}, {4, 2}, {5, 1}},
+		},
+	}
+	for _, tC := range testCases {
+		tC := tC
+		t.Run(tC.desc, func(t *testing.T) {
+			t.Parallel()
+
+			avl := NewAVL(bst.NewBST())
+			for _, key := range tC.steps {
+				avl.Insert(key, key)
+			}
+
+			avl.Remove(tC.removed)
+
+			actual := make([]Node, 0, len(tC.expected))
+			avl.core.WalkInorder(func(node *bst.Node) {
 				actual = append(actual, Node{node.Key, node.Height})
 			})
 

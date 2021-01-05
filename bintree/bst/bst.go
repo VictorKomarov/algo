@@ -108,15 +108,18 @@ func Search(node *Node, key int) *Node {
 	return Search(node.Right, key)
 }
 
-func (b *Tree) Remove(key int) {
+//return Node for rebalance strategy
+func (b *Tree) Remove(key int) *Node {
 	removed := Search(b.Root, key)
 	if removed == nil {
-		return
+		return nil
 	}
 
 	switch countNodeChilds(removed) {
 	case 0:
 		b.AdoptNodeInstead(removed, nil)
+
+		return removed.Parent
 	case 1:
 		сhild := removed.Left
 		if сhild == nil {
@@ -124,6 +127,8 @@ func (b *Tree) Remove(key int) {
 		}
 
 		b.AdoptNodeInstead(removed, сhild)
+
+		return сhild
 	case 2:
 		prev := prevElem(removed.Left)
 		if removed.Left != prev {
@@ -134,6 +139,10 @@ func (b *Tree) Remove(key int) {
 		prev.Link(removed.Right, Right)
 
 		b.AdoptNodeInstead(removed, prev)
+
+		return prev
+	default:
+		return nil
 	}
 }
 
