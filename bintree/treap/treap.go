@@ -24,6 +24,14 @@ func NewNode(key int, value interface{}) *Node {
 	}
 }
 
+type Tree struct {
+	root *Node
+}
+
+func New() *Tree {
+	return &Tree{}
+}
+
 func split(root *Node, key int) (*Node, *Node) {
 	if root == nil {
 		return nil, nil
@@ -77,17 +85,26 @@ func Search(node *Node, key int) *Node {
 	return Search(node.Right, key)
 }
 
-func Insert(root *Node, inserted *Node) *Node {
-	less, other := split(root, inserted.Key)
+func (t *Tree) Insert(inserted *Node) {
+	if t.root == nil {
+		t.root = inserted
 
-	return merge(merge(less, inserted), other)
+		return
+	}
+
+	less, other := split(t.root, inserted.Key)
+	if other != nil && other.Key == inserted.Key {
+		return
+	}
+
+	t.root = merge(merge(less, inserted), other)
 }
 
-func Remove(root *Node, key int) *Node {
-	less, other := split(root, key)
+func (t *Tree) Remove(key int) {
+	less, other := split(t.root, key)
 	if other != nil && other.Key == key {
 		other = merge(other.Left, other.Right)
 	}
 
-	return merge(less, other)
+	t.root = merge(less, other)
 }
