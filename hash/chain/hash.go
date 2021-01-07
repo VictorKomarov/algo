@@ -3,25 +3,22 @@ package chain
 type bucket struct {
 	key   int
 	value interface{}
+	size  int
 	next  *bucket
 }
 
-func newBucket(key int, value interface{}) *bucket {
+func newBucket(key int, value interface{}, next *bucket) *bucket {
+	size := 0
+	if next != nil {
+		size = next.size
+	}
+
 	return &bucket{
 		key:   key,
 		value: value,
+		next:  next,
+		size:  size + 1,
 	}
-}
-
-// return current bucket size
-func add(head *bucket, inserted *bucket) int {
-	i := 2 // current head + inserted
-	for ; head.next != nil; i++ {
-		head = head.next
-	}
-
-	head.next = inserted
-	return i
 }
 
 type Hash struct {
@@ -39,17 +36,11 @@ func New() *Hash {
 }
 
 func (h *Hash) Set(key int, value interface{}) {
-	index := key % h.size
+	index := key % h.size // it can be more pretty
 
-	node := newBucket(key, value)
-	if h.buckets[index] == nil {
-		h.buckets[index] = node
+	h.buckets[index] = newBucket(key, value, h.buckets[index])
 
-		return
-	}
-
-	size := add(h.buckets[index], node)
-	if size >= h.loadFactor {
+	if h.buckets[index].size >= h.loadFactor {
 		h.migrate(h.size * 2)
 	}
 }
