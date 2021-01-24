@@ -101,3 +101,95 @@ func TestKosarayu(t *testing.T) {
 		})
 	}
 }
+
+func TestCana(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		matrix   [][]int
+		expected [][]int
+	}{
+		{
+			desc:     "pdf example", //reverse if need
+			matrix:   [][]int{{2, 4, 6}, {3}, {4}, {}, {1, 6, 9}, {7}, {}, {6}, {}},
+			expected: [][]int{{4}, {7, 3}, {2, 6}, {9, 1}, {8, 5}},
+		},
+	}
+	for _, tC := range testCases {
+		tC := tC
+		t.Run(tC.desc, func(t *testing.T) {
+			t.Parallel()
+
+			g := Graph{matrix: tC.matrix}
+			actual := g.Cana()
+			for i := range tC.expected {
+				sub := actual[:len(tC.expected[i])]
+				for _, num := range tC.expected[i] {
+					require.Contains(t, sub, num, tC.desc)
+				}
+
+				actual = actual[len(tC.expected[i]):]
+			}
+		})
+	}
+}
+
+func TestTaryana(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		matrix   [][]int
+		expected []int
+	}{
+		{
+			desc:     "pdf example",
+			matrix:   [][]int{{2, 4, 6}, {3}, {4}, {}, {1, 6, 9}, {7}, {}, {6}, {}},
+			expected: []int{8, 5, 9, 1, 6, 7, 2, 3, 4},
+		},
+	}
+	for _, tC := range testCases {
+		tC := tC
+		t.Run(tC.desc, func(t *testing.T) {
+			t.Parallel()
+
+			g := Graph{matrix: tC.matrix}
+			require.Equal(t, tC.expected, g.Taryana(), tC.desc)
+		})
+	}
+}
+
+func TestDemucron(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		matrix   [][]int
+		expected []int
+	}{
+		{
+			desc: "pdf example",
+			matrix: [][]int{
+				{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0}, //1
+				{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0}, //2
+				{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //3
+				{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //4
+				{0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0}, //5
+				{0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0}, //6
+				{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0}, //7
+				{0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0}, //8
+				{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, //9
+				{1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0}, //10
+				{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //11
+				{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //12
+				{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //13
+				{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //14
+			},
+			expected: []int{4, 7, 1, 5, 8, 9, 0, 3, 6, 11, 13, 10, 12, 2},
+		},
+	}
+	for _, tC := range testCases {
+		tc := tC
+		t.Run(tC.desc, func(t *testing.T) {
+			t.Parallel()
+
+			m := MatrixAdjacencies(tc.matrix)
+			require.Equal(t, tc.expected, m.Demucron(), tc.desc)
+		})
+	}
+}
