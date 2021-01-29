@@ -7,10 +7,6 @@ type Edge struct {
 	Cost     int
 }
 
-func (e Edge) isSame(e2 Edge) bool {
-	return e.From == e2.From && e.To == e2.To || e.From == e2.To && e.To == e2.From
-}
-
 // for this problem its okey i think
 type vGraph struct {
 	edges map[Vertex][]Edge
@@ -20,7 +16,7 @@ func minExcluding(in []Edge, used map[Vertex]bool) Edge {
 	min := -1
 
 	for i, e := range in {
-		if !used[e.To] {
+		if !(used[e.To] && used[e.From]) {
 			if min == -1 || e.Cost < in[min].Cost {
 				min = i
 			}
@@ -36,11 +32,19 @@ func (v vGraph) Prim(begin Vertex) []Edge {
 	used := map[Vertex]bool{
 		begin: true,
 	}
+	edges := v.edges[begin]
 
-	for len(result) != len(v.edges) {
-		next := minExcluding(v.edges[begin], used)
-		used[next.To] = true
-		begin = next.To
+	for len(result) != len(v.edges)-1 {
+		next := minExcluding(edges, used)
+		result = append(result, next)
+
+		if used[next.To] {
+			used[next.From] = true
+			edges = append(edges, v.edges[next.From]...)
+		} else {
+			used[next.To] = true
+			edges = append(edges, v.edges[next.To]...)
+		}
 	}
 
 	return result
