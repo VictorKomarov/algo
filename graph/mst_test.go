@@ -103,7 +103,7 @@ func TestPrim(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			t.Parallel()
 
-			graph := vGraph{edges: tC.matrix}
+			graph := pGraph{edges: tC.matrix}
 
 			require.Equal(t, tC.expectedMST, graph.Prim(Vertex(1)), tC.desc)
 		})

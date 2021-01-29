@@ -1,5 +1,7 @@
 package graph
 
+import "sort"
+
 type Vertex int
 
 type Edge struct {
@@ -8,10 +10,11 @@ type Edge struct {
 }
 
 // for this problem its okey i think
-type vGraph struct {
+type pGraph struct {
 	edges map[Vertex][]Edge
 }
 
+// in should be priority queue
 func minExcluding(in []Edge, used map[Vertex]bool) Edge {
 	min := -1
 
@@ -26,7 +29,7 @@ func minExcluding(in []Edge, used map[Vertex]bool) Edge {
 	return in[min]
 }
 
-func (v vGraph) Prim(begin Vertex) []Edge {
+func (v pGraph) Prim(begin Vertex) []Edge {
 	result := make([]Edge, 0, len(v.edges))
 
 	used := map[Vertex]bool{
@@ -45,6 +48,33 @@ func (v vGraph) Prim(begin Vertex) []Edge {
 			used[next.To] = true
 			edges = append(edges, v.edges[next.To]...)
 		}
+	}
+
+	return result
+}
+
+type bGraph struct {
+	vertexs []Vertex
+	edges   []Edge
+}
+
+func (v bGraph) Boruvka() []Edge {
+	ufd := NewUFD(v.vertexs)
+
+	sort.Slice(v.edges, func(i, j int) bool {
+		return v.edges[i].Cost < v.edges[i].Cost
+	})
+
+	result := make([]Edge, len(v.edges))
+	for i := range v.edges {
+		from, _ := ufd.Find(v.edges[i].From)
+		to, _ := ufd.Find(v.edges[i].To)
+
+		if from != to {
+			result = append(result, v.edges[i])
+		}
+
+		ufd.Merge(from, to)
 	}
 
 	return result
