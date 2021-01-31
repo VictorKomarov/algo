@@ -72,9 +72,46 @@ func (v bGraph) Boruvka() []Edge {
 
 		if from != to {
 			result = append(result, v.edges[i])
+			if len(result) == len(v.vertexs)-1 {
+				return result
+			}
 		}
 
 		ufd.Merge(from, to)
+	}
+
+	return result
+}
+
+func canAppend(edges []Edge, e Edge) bool {
+	from := false
+	to := false
+	for i := range edges {
+		if edges[i].From == e.From {
+			from = true
+		}
+
+		if edges[i].To == e.To {
+			to = true
+		}
+	}
+
+	return !(from && to)
+}
+
+func (v bGraph) Kraskala() []Edge {
+	sort.Slice(v.edges, func(i, j int) bool {
+		return v.edges[i].Cost < v.edges[j].Cost
+	})
+
+	result := make([]Edge, 0, len(v.edges))
+	for i := range v.edges {
+		if canAppend(result, v.edges[i]) {
+			result = append(result, v.edges[i])
+			if len(result) == len(v.vertexs)-1 {
+				return result
+			}
+		}
 	}
 
 	return result

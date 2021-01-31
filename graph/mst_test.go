@@ -161,3 +161,55 @@ func TestBoruvka(t *testing.T) {
 		})
 	}
 }
+
+func TestKraskala(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		vertexs  []Vertex
+		edges    []Edge
+		expected []Edge
+	}{
+		{
+			desc: "wiki exmaple",
+			vertexs: []Vertex{
+				Vertex(1), Vertex(2), Vertex(3),
+				Vertex(4), Vertex(5), Vertex(6),
+				Vertex(7),
+			},
+			edges: []Edge{
+				{From: Vertex(1), To: Vertex(2), Cost: 7},
+				{From: Vertex(2), To: Vertex(3), Cost: 11},
+				{From: Vertex(1), To: Vertex(4), Cost: 4},
+				{From: Vertex(4), To: Vertex(2), Cost: 9},
+				{From: Vertex(2), To: Vertex(5), Cost: 10},
+				{From: Vertex(4), To: Vertex(5), Cost: 15},
+				{From: Vertex(3), To: Vertex(5), Cost: 5},
+				{From: Vertex(4), To: Vertex(6), Cost: 6},
+				{From: Vertex(6), To: Vertex(5), Cost: 12},
+				{From: Vertex(6), To: Vertex(7), Cost: 13},
+				{From: Vertex(5), To: Vertex(7), Cost: 8},
+			},
+			expected: []Edge{
+				{From: Vertex(1), To: Vertex(4), Cost: 4},
+				{From: Vertex(3), To: Vertex(5), Cost: 5},
+				{From: Vertex(4), To: Vertex(6), Cost: 6},
+				{From: Vertex(1), To: Vertex(2), Cost: 7},
+				{From: Vertex(5), To: Vertex(7), Cost: 8},
+				{From: Vertex(2), To: Vertex(5), Cost: 10},
+			},
+		},
+	}
+	for _, tC := range testCases {
+		tC := tC
+		t.Run(tC.desc, func(t *testing.T) {
+			t.Parallel()
+
+			s := bGraph{
+				vertexs: tC.vertexs,
+				edges:   tC.edges,
+			}
+
+			require.Equal(t, tC.expected, s.Kraskala(), tC.desc)
+		})
+	}
+}
