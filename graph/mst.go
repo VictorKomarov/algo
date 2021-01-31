@@ -62,10 +62,10 @@ func (v bGraph) Boruvka() []Edge {
 	ufd := NewUFD(v.vertexs)
 
 	sort.Slice(v.edges, func(i, j int) bool {
-		return v.edges[i].Cost < v.edges[i].Cost
+		return v.edges[i].Cost < v.edges[j].Cost
 	})
 
-	result := make([]Edge, len(v.edges))
+	result := make([]Edge, 0, len(v.edges))
 	for i := range v.edges {
 		from, _ := ufd.Find(v.edges[i].From)
 		to, _ := ufd.Find(v.edges[i].To)
