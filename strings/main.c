@@ -14,7 +14,7 @@ int boyer_moore(const char *str, const char *template)
     size_t begin = 0;
     while (begin + template_len -1 < str_len)
     {
-        size_t match = template_len - 1;
+        int match = template_len - 1;
         while (match >= 0 && template[match] == str[begin+match])
         {
             match--;
