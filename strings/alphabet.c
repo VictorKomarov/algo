@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include "alphabet.h"
 
-#define alphabet_size 255
-
 static size_t alphabet_shift[alphabet_size] = {0};
 
 size_t get_shift(char c)
