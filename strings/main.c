@@ -7,34 +7,6 @@
 #include <sys/mman.h>
 #include "alphabet.h"
 
-int boyer_moore(const char *str, const char *template)
-{
-    size_t str_len = strlen(str);
-    size_t template_len = strlen(template);
-    if (template_len == 0 || template_len > str_len) return -1;
-
-    init_alphabet_shift(template, template_len);
-
-    size_t begin = 0;
-    while (begin + template_len - 1 < str_len)
-    {
-        int match = template_len - 1;
-        while (match >= 0 && template[match] == str[begin+match])
-        {
-            match--;
-        }
-
-        if (match == -1) 
-        {
-            return begin;
-        }
-        
-        begin += get_shift(str[begin+match]);
-    }
-    
-    return -1;
-}
-
 bool is_suffix(const char *text, int len, int from, int suffix)
 {
     while (suffix < len)
@@ -47,9 +19,8 @@ bool is_suffix(const char *text, int len, int from, int suffix)
     return true;
 }
 
-int *suffix_shift(const char* template)
+int *suffix_shift(const char* template, size_t len)
 {
-    size_t len = strlen(template);
     int *data = malloc(len*sizeof(int)); 
     if (!data) return NULL;
 
@@ -73,13 +44,38 @@ int *suffix_shift(const char* template)
     return data;   
 }
 
+int boyer_moore(const char *str, const char *template)
+{
+    size_t str_len = strlen(str);
+    size_t template_len = strlen(template);
+    if (template_len == 0 || template_len > str_len) return -1;
+
+    init_alphabet_shift(template, template_len);
+    int *suffix = suffix_shift(template, template_len);
+    if (suffix == NULL) return -1;
+
+    size_t begin = 0;
+    while (begin + template_len - 1 < str_len)
+    {
+        int match = template_len - 1;
+        while (match >= 0 && template[match] == str[begin+match])
+        {
+            match--;
+        }
+
+        if (match == -1) 
+        {
+            return begin;
+        }
+           
+        begin += (match == template_len-1) ? get_alphabet_shift(str[begin+match]) : suffix[template_len - match];
+    }
+    
+    return -1;
+}
+
+
 int main()
 {
-    const char *template = "AB..B..AB";
-    int *data = suffix_shift(template);
-    for (size_t i = 0; i < strlen(template); i++)
-    {
-        printf("%d ", data[i]);
-    }
     return EXIT_SUCCESS;
 }

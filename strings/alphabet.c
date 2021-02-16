@@ -3,7 +3,7 @@
 
 static size_t alphabet_shift[alphabet_size] = {0};
 
-size_t get_shift(char c)
+size_t get_alphabet_shift(char c)
 {
     return alphabet_shift[c];
 }
