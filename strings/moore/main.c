@@ -5,6 +5,7 @@
 #include <stdbool.h>    
 #include <unistd.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include "alphabet.h"
 
 bool is_suffix(const char *text, int len, int from, int suffix)
@@ -75,7 +76,46 @@ int boyer_moore(const char *str, const char *template)
 }
 
 
-int main()
+size_t get_offset(const char *file) 
 {
+    size_t i = 0;
+    while (file[i])
+    {
+        if (file[i] == '\n') return i;
+        ++i;
+    }
+    
+    return i;
+}
+
+int main(int argc, char **argv)
+{
+    int fd = open(argv[1], O_RDONLY);
+    if (fd <= 0) {
+        perror("can't open file");
+        return EXIT_FAILURE;
+    }
+
+    struct stat buf;
+    int code = fstat(fd, &buf);
+    if (code == -1) {
+        perror("can't get size");
+        return EXIT_FAILURE;
+    }
+
+    char *file = mmap(NULL, buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+    if (file == MAP_FAILED) {
+        perror("mmap error");
+        return EXIT_FAILURE;
+    }
+
+    size_t offset = get_offset(file);
+
+    char *temp = malloc(sizeof(char) * (offset+1));
+    memcpy(temp, file, offset);
+    file = &file[offset+1];
+
+    printf("%d\n", boyer_moore(file, temp));
+
     return EXIT_SUCCESS;
 }
