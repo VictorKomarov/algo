@@ -31,38 +31,42 @@ char *build_preffix(char *parent, char s)
     text[len] = s;
     text[len+1] = '\0';
 
-    printf("%s\n", text);
     return text;
 }
 
-node *init_node(char *parent, char s)
+node *init_node(char *parent, char s, bool terminate)
 {
     node *n = malloc(sizeof(node));
     if (!n) {
         return n;
     }
 
-    n->is_terminate = false;
+    memset(n->childs, 0, sizeof(struct node *) * MAX_CHILDS);
+    n->is_terminate = terminate;
     n->preffix = build_preffix(parent, s);
     return n;
 }
 
-void add_suffix(node *n, char s)
+void add_preffix(node *n, char *s, size_t size, size_t added)
 {
-    if (!n->childs[s]) {
-        n->childs[s] = init_node(n->preffix, s);
-        return;
-    } 
+    if (!n->childs[s[added]]) {
+        n->childs[s[added]] = init_node(n->preffix, s[added], added == size)0;
+    }
 
-    add_suffix(n->childs[s], s);
+    if (added != size) {
+        add_preffix(n->childs[s[added]], s, size, added+1);
+    }
 }
 
 int main()
 {
-    node n;
-    char *text = "ABCDEDFDAVDSDA";
-    for (size_t i = 0; i < strlen(text); i++)
-    {
-        add_suffix(&n, text[i]);
-    }
+    char *text1 = "ABABC";
+
+    node *n = init_node(NULL, '\0', false);
+    add_preffix(n, text1, strlen(text1)-1, 0);
+    n->preffix = "root";
+
+    char *text2 = "AFOBAS";
+    add_preffix(n, text2, strlen(text2)-1, 0);
+    print_nodes(n);
 }
